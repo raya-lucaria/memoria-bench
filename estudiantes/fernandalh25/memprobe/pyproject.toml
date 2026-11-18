@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "memprobe"
+version = "0.2.0"
+description = "Benchmark de memoria para agentes, determinista: sin modelo, sin API keys, sin embeddings y sin red."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+memprobe = "memprobe.cli:main"
+
+[tool.setuptools]
+packages = ["memprobe"]
