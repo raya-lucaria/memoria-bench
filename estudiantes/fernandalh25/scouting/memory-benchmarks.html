@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Memory Benchmarks Work</title>
+<style>
+:root{--bg:#fafaf7;--fg:#1d1d1b;--mut:#62625c;--card:#fff;--line:#e2e1da;--acc:#2f5d8a;--warn:#a65b00;--warnbg:#fff4e0}
+@media (prefers-color-scheme:dark){:root{--bg:#161614;--fg:#ecebe5;--mut:#a3a29a;--card:#1f1f1c;--line:#34332e;--acc:#7fb0e0;--warn:#e8a64f;--warnbg:#2c2314}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:2rem;margin:0 0 .3rem}h2{margin-top:2.5rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}h3{margin:1.4rem 0 .3rem}
+.sub{color:var(--mut);margin:0 0 1.5rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:12px 0}
+.warn{background:var(--warnbg);border-color:var(--warn);color:var(--fg)}
+.warn b{color:var(--warn)}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:14px 0}
+.step{flex:1 1 140px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:.92rem}
+.step b{display:block;color:var(--acc);margin-bottom:2px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:.9rem;background:var(--card)}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--bg);position:sticky;left:0}
+td:first-child{font-weight:600}
+a{color:var(--acc)}
+code{background:var(--line);padding:1px 5px;border-radius:4px;font-size:.88em}
+ul{padding-left:1.2rem}
+.src li{margin:.2rem 0;font-size:.9rem;word-break:break-word}
+.tag{display:inline-block;font-size:.75rem;border:1px solid var(--line);border-radius:99px;padding:0 8px;color:var(--mut)}
+</style>
+</head>
+<body>
+<main>
+<h1>How agent-memory benchmarks work, and how they compare</h1>
+<p class="sub">Research summary, 17 Nov 2026. Model-neutral by design: it describes what each benchmark measures and how it scores. It reports no vendor or model leaderboard numbers.</p>
+
+<div class="card warn"><b>Scope note.</b> "Harness memory" is ambiguous. I read it as: benchmarks that test whether an LLM agent, together with its memory layer (the surrounding code that stores and retrieves information), can retain and use information across long interactions. Most of the field is chat-history based. Only a few newer benchmarks test memory inside agentic tasks. If you meant something narrower, such as coding-agent memory files, only the last two rows of the table are relevant.</div>
+
+<h2>1. The common mechanism</h2>
+<p>Almost every benchmark follows one loop. They differ in what goes into each stage.</p>
+<div class="flow">
+  <div class="step"><b>1. History</b>A long, timestamped conversation or task stream is built, usually by an LLM pipeline plus human checks.</div>
+  <div class="step"><b>2. Ingest</b>The system under test reads the history. Some benchmarks feed it incrementally, in chunks.</div>
+  <div class="step"><b>3. Memory layer</b>The system stores raw text, summaries, extracted facts, or a graph. Or it stores nothing and keeps the full context.</div>
+  <div class="step"><b>4. Question</b>A question is asked later whose answer depends on earlier content.</div>
+  <div class="step"><b>5. Answer</b>A "reader" model answers from whatever the memory layer returns.</div>
+  <div class="step"><b>6. Score</b>An F1 or exact-match metric, or an LLM judge, compares the answer to a gold answer.</div>
+</div>
+<p>This loop shows what is compared. The thing under test is the <em>whole pipeline</em> (memory layer, reader model and judge), not memory in isolation. Typical comparisons:</p>
+<ul>
+  <li><b>Memory systems against each other</b> (extraction, summaries, graphs), holding the reader model fixed.</li>
+  <li><b>Memory systems against baselines:</b> full-context ("put everything in the prompt") and plain retrieval (RAG). Those baselines show whether a memory layer adds anything.</li>
+  <li><b>Abilities</b> within one system, such as recall, temporal reasoning, updating facts and abstaining when the answer is not in memory.</li>
+  <li><b>Scale:</b> how accuracy degrades as the history grows from thousands to millions of tokens.</li>
+</ul>
+
+<h2>2. The main benchmarks</h2>
+<div class="tw"><table>
+<thead><tr><th>Benchmark</th><th>Origin / venue</th><th>What the history looks like</th><th>What it tests</th><th>Scoring</th><th>Scale</th></tr></thead>
+<tbody>
+<tr><td><a href="https://arxiv.org/abs/2402.17753">LoCoMo</a></td><td>Snap Research, UNC, USC. ACL 2024</td><td>Machine-generated dialogues grounded in personas and event graphs, checked by humans. Up to 35 sessions each.</td><td>QA (single-hop, multi-hop, temporal, commonsense, adversarial), event summarization, multimodal dialogue.</td><td>F1 in the paper. Many later papers use an LLM judge instead.</td><td>Paper: ~300 turns / ~9K tokens per conversation. Public release: 10 conversations.</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2410.10813">LongMemEval</a></td><td>UCLA, Tencent AI Lab. ICLR 2025</td><td>User–assistant chats with timestamps, embedded among distractor sessions.</td><td>5 abilities: information extraction, multi-session reasoning, temporal reasoning, knowledge updates, abstention.</td><td>Official code uses an LLM judge (GPT-4o).</td><td>500 questions. S ≈ 115K tokens, M ≈ 500 sessions (~1.5M tokens).</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2507.05257">MemoryAgentBench</a></td><td>UC San Diego. ICLR 2026</td><td>Existing long-context datasets chunked and fed incrementally, plus two new ones (EventQA, FactConsolidation).</td><td>4 competencies: accurate retrieval, test-time learning, long-range understanding, and selective forgetting / conflict resolution (the label differs by paper version).</td><td>Task-specific metrics.</td><td>Varies by sub-dataset.</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2510.27246">BEAM</a></td><td>Univ. of Alberta, UMass Amherst. ICLR 2026</td><td>100 generated conversations across domains, built for narrative coherence.</td><td>Long-term memory at scale, with 2,000 validated questions.</td><td>Evaluation scripts released with the paper.</td><td>128K, 500K, 1M and 10M tokens.</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2602.16313">MemoryArena</a></td><td>He et al. ICML 2026</td><td>Multi-session <em>tasks</em> with interdependent subtasks (web shopping, travel planning, information search, formal reasoning).</td><td>Whether memory from earlier sessions helps the agent <em>act</em> later, not just answer questions.</td><td>Task success.</td><td>Reported ~766 tasks / 4,850 subtasks (secondary source).</td></tr>
+<tr><td><a href="https://arxiv.org/pdf/2608.20664">DreamBench-SWE</a> <span class="tag">preprint</span></td><td>Single independent author</td><td>Multi-session software tasks where later tasks depend on non-inferable evidence from earlier sessions.</td><td>"Memory hygiene" for coding agents.</td><td>Executable hidden tests.</td><td>180 runs in the reported setup.</td></tr>
+</tbody></table></div>
+
+<h2>3. Comparison along the axes that matter</h2>
+<h3>What is being tested</h3>
+<ul>
+  <li><b>Recall and QA over a history</b> (LoCoMo, LongMemEval, BEAM). This is the dominant style and is easy to automate. LongMemEval is the one that most explicitly separates knowledge updates and abstention.</li>
+  <li><b>Memory as a learning or maintenance skill</b> (MemoryAgentBench). It asks whether the agent can learn new rules at test time and reconcile conflicting facts, in addition to retrieving them.</li>
+  <li><b>Memory in action</b> (MemoryArena, DreamBench-SWE). Success is measured by task outcome, closest to how an agent harness is used. The MemoryArena authors report that agents that do well on long-context memory benchmarks such as LoCoMo perform poorly in their agentic setting. That is a reported finding, and I have not verified it independently.</li>
+</ul>
+<h3>Scale</h3>
+<p>Scale ranges from one short conversation (LoCoMo) to 10M tokens (BEAM). Where the whole history fits in a model's context window, the benchmark partly measures long-context ability rather than memory. Scale therefore changes what a benchmark measures.</p>
+<h3>Scoring</h3>
+<p>F1 and exact-match are strict but miss correct paraphrases. LLM judges are flexible but depend on the judge model and prompt. This is the largest source of cross-paper incomparability.</p>
+
+<h2>4. Known weaknesses (reported by critics, not all independently verified)</h2>
+<ul>
+  <li><b>LoCoMo size.</b> One critique says conversations run ~16–26K tokens and fit in a modern context window. The paper itself reports ~9K tokens on average. These figures conflict, probably because of different tokenizers or counting methods, and I have not resolved which is right.</li>
+  <li><b>LoCoMo answer key and judge.</b> One analysis claims about 6.4% of gold answers are wrong and that a lenient judge accepts about 63% of intentionally wrong answers. That claim comes from a third-party blog post. Treat it as a lead to check, not a settled fact.</li>
+  <li><b>Weak baselines hide the question.</b> A "dump everything into context" baseline is reported to score competitively on LoCoMo and LongMemEval. If so, those benchmarks may not separate memory layers from simply having a long context.</li>
+  <li><b>No standard protocol.</b> Papers vary the judge, reader model, top-k retrieval and subset of questions. Scores from different papers are generally not comparable.</li>
+  <li><b>Self-reporting.</b> Many published numbers come from the vendors of the systems being tested, and the same vendor sometimes publishes different numbers for one benchmark. That is a conflict of interest independent of any particular model or product.</li>
+  <li><b>Coverage gaps.</b> Critics note that chat-history benchmarks rarely test conflicting information streams, behaviour change after mistakes, or months-long histories.</li>
+</ul>
+
+<h2>5. Neutral guidance for reading a result</h2>
+<ol>
+  <li>Check which <b>reader model and judge model</b> were used. Different models make scores incomparable.</li>
+  <li>Check whether a <b>full-context baseline</b> was run on the same data. If not, you cannot tell whether memory helped.</li>
+  <li>Check <b>history size against the context window</b>. A history that fits tells you less about memory.</li>
+  <li>Ask who ran the evaluation. Independent or paper-authored runs are weaker evidence of bias than vendor self-reports, but replicate if the decision matters.</li>
+  <li>Match the benchmark to your use: QA recall (LongMemEval, BEAM), updating and forgetting (MemoryAgentBench), or task outcomes (MemoryArena, DreamBench-SWE).</li>
+</ol>
+
+<div class="card warn"><b>Limits of this research.</b> I did one search pass per benchmark and read search summaries rather than every paper in full. I did not run any benchmark or check leaderboards, and I found little independent criticism of MemoryAgentBench. DreamBench-SWE is a single-author preprint. Specific numbers marked above come from secondary sources.</div>
+
+<h2>Sources</h2>
+<ul class="src">
+<li><a href="https://arxiv.org/abs/2410.10813">LongMemEval (arXiv 2410.10813)</a></li>
+<li><a href="https://arxiv.org/abs/2402.17753">LoCoMo (arXiv 2402.17753)</a></li>
+<li><a href="https://arxiv.org/abs/2507.05257">MemoryAgentBench (arXiv 2507.05257)</a></li>
+<li><a href="https://arxiv.org/abs/2510.27246">BEAM, "Beyond a Million Tokens" (arXiv 2510.27246)</a></li>
+<li><a href="https://arxiv.org/abs/2602.16313">MemoryArena (arXiv 2602.16313)</a></li>
+<li><a href="https://arxiv.org/pdf/2608.20664">DreamBench-SWE (preprint)</a></li>
+<li>Commentary, treat as opinion: <a href="https://niraya666.github.io/en/posts/agent-memory-benchmark-summary/">Beyond SOTA: What Agent-Memory Benchmarks Actually Measure</a>; <a href="https://dreaming.press/posts/how-to-read-an-agent-memory-benchmark.html">How to Read an Agent-Memory Benchmark</a>; <a href="https://mnemoverse.com/docs/research/evaluation/ai-memory-benchmarks-field-guide">AI Memory Benchmarks: A Field Guide</a></li>
+<li>Vendor blog, used only for the existence of claims: <a href="https://mem0.ai/library/agent-memory/ai-memory-benchmarks-in-2026">Mem0: AI Memory Benchmarks</a></li>
+</ul>
+</main>
+</body>
+</html>

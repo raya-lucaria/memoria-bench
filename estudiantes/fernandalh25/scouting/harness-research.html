@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harness Field Notes</title>
+<style>
+:root{
+  --paper:#f4efe4; --paper2:#ebe4d3; --ink:#1d1b17; --ink2:#4a4538; --rule:#cfc6b0;
+  --accent:#c2410c; --v:#14663c; --vbg:#d9eddf; --d:#8a5a00; --dbg:#f6e7c1; --i:#8b1d3a; --ibg:#f5d9e0;
+  --code:#17140f; --codefg:#efe7d2; --codedim:#9d9378; --hl:#ffdf8a;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#15130f; --paper2:#1d1a14; --ink:#ece4d0; --ink2:#b5ac94; --rule:#3a352a;
+    --accent:#ff8a4c; --v:#6fd39a; --vbg:#16301f; --d:#e6b64d; --dbg:#322712; --i:#ff8fae; --ibg:#38161f;
+    --code:#0b0a07; --codefg:#efe7d2; --codedim:#7d745d; --hl:#5a4a14;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#15130f; --paper2:#1d1a14; --ink:#ece4d0; --ink2:#b5ac94; --rule:#3a352a;
+  --accent:#ff8a4c; --v:#6fd39a; --vbg:#16301f; --d:#e6b64d; --dbg:#322712; --i:#ff8fae; --ibg:#38161f;
+  --code:#0b0a07; --codefg:#efe7d2; --codedim:#7d745d; --hl:#5a4a14;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:16px/1.6 ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+  background-image:linear-gradient(var(--rule) 1px,transparent 1px);background-size:100% 32px;background-attachment:local;}
+.mono,code,pre,.badge,nav a,button,th,.lab{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+a{color:var(--accent)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+header.top{padding:56px 0 28px;border-bottom:3px double var(--ink)}
+.kicker{font:12px ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:clamp(34px,6vw,64px);line-height:1.02;margin:.2em 0 .25em;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{max-width:62ch;font-size:19px;color:var(--ink2)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;font:12px ui-monospace,Menlo,monospace;color:var(--ink2);margin-top:18px}
+nav.sticky{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--ink);}
+nav.sticky .wrap{display:flex;gap:4px;overflow-x:auto;align-items:center;padding-top:6px;padding-bottom:6px}
+nav a{white-space:nowrap;text-decoration:none;color:var(--ink);font-size:12px;padding:5px 9px;border:1px solid transparent}
+nav a:hover,nav a.on{border-color:var(--ink);background:var(--paper2)}
+#theme{margin-left:auto}
+button{font-size:12px;color:var(--ink);background:var(--paper2);border:1px solid var(--ink);padding:5px 10px;cursor:pointer}
+button:hover{background:var(--hl)}
+button[aria-pressed="true"],button.on{background:var(--ink);color:var(--paper)}
+section{padding:48px 0 12px;scroll-margin-top:44px}
+h2{font-size:clamp(26px,4vw,38px);margin:0 0 4px;letter-spacing:-.01em}
+h2 .n{font:13px ui-monospace,Menlo,monospace;color:var(--accent);display:block;letter-spacing:.12em}
+h3{font-size:20px;margin:28px 0 6px}
+p{margin:.6em 0}
+.sub{color:var(--ink2);max-width:70ch}
+.badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:1px 6px;border:1px solid;vertical-align:middle;white-space:nowrap}
+.b-V{color:var(--v);background:var(--vbg);border-color:var(--v)}
+.b-D{color:var(--d);background:var(--dbg);border-color:var(--d)}
+.b-I{color:var(--i);background:var(--ibg);border-color:var(--i)}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:18px 0}
+.legend div{border:1px solid var(--ink);padding:10px 12px;background:var(--paper2);font-size:14px}
+.card{border:1px solid var(--ink);background:var(--paper2);padding:14px 16px;margin:14px 0}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.note{border-left:4px solid var(--accent);padding:6px 12px;background:var(--paper2);margin:14px 0;font-size:15px}
+.note b{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.08em;color:var(--accent);text-transform:uppercase}
+/* layer diagram */
+.layers{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:16px;align-items:start}
+@media(max-width:760px){.layers{grid-template-columns:1fr}}
+.stack{display:flex;flex-direction:column;gap:0}
+.stack button{text-align:left;padding:12px 12px;border-bottom:none}
+.stack button:last-child{border-bottom:1px solid var(--ink)}
+.stack .model{background:var(--ink);color:var(--paper);cursor:default}
+.stack .tag{float:right;opacity:.6}
+.panel{border:1px solid var(--ink);padding:16px;background:var(--paper2);min-height:240px}
+.panel h4{margin:0 0 6px;font-size:22px}
+.panel table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+.panel td{border-top:1px solid var(--rule);padding:5px 6px;vertical-align:top}
+.panel td:first-child{font-family:ui-monospace,Menlo,monospace;white-space:nowrap;width:1%;color:var(--accent)}
+/* harness chapter */
+.pick{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
+.pick button{padding:8px 12px}
+.chap{border:1px solid var(--ink);background:var(--paper2)}
+.chap-h{padding:16px 18px;border-bottom:1px solid var(--ink)}
+.chap-h h3{margin:0;font-size:28px}
+.chap-h .repo{font:12px ui-monospace,Menlo,monospace;color:var(--ink2)}
+.flow{display:flex;gap:0;overflow-x:auto;padding:16px 12px 6px;align-items:stretch}
+.step{flex:0 0 auto;min-width:150px;max-width:190px;border:1px solid var(--ink);background:var(--paper);padding:8px 10px;font-size:13px;line-height:1.3;cursor:pointer;text-align:left;font-family:inherit;color:var(--ink);position:relative}
+.step b{display:block;font:11px ui-monospace,Menlo,monospace;color:var(--accent);margin-bottom:3px}
+.step.on{background:var(--ink);color:var(--paper)}
+.step.on b{color:var(--hl)}
+.arrow{flex:0 0 22px;align-self:center;text-align:center;color:var(--accent);font-family:ui-monospace,monospace}
+.detail{display:grid;grid-template-columns:1fr 1.25fr;gap:0;border-top:1px solid var(--ink)}
+@media(max-width:820px){.detail{grid-template-columns:1fr}}
+.detail .txt{padding:16px 18px}
+.detail .txt .cite{font:12px ui-monospace,Menlo,monospace;color:var(--ink2);word-break:break-all;margin-top:10px}
+pre.code{margin:0;background:var(--code);color:var(--codefg);padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.5;max-height:420px;tab-size:2}
+.chap .facts{border-top:1px solid var(--ink);padding:6px 18px 14px}
+.fact{display:grid;grid-template-columns:130px 1fr;gap:10px;padding:8px 0;border-top:1px dashed var(--rule);font-size:15px}
+.fact:first-child{border-top:none}
+.fact .lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);padding-top:3px}
+@media(max-width:560px){.fact{grid-template-columns:1fr;gap:2px}}
+.surp{border-top:1px solid var(--ink);padding:12px 18px 16px;background:var(--paper)}
+.surp h5{margin:0 0 6px;font:12px ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.surp li{margin:6px 0}
+/* matrix */
+.ctrl{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.ctrl .lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;align-self:center;margin-right:4px;color:var(--ink2)}
+.mwrap{overflow:auto;border:1px solid var(--ink);background:var(--paper2);max-height:78vh}
+table.mx{border-collapse:separate;border-spacing:0;font-size:13.5px;min-width:100%}
+table.mx th,table.mx td{border-bottom:1px solid var(--rule);border-right:1px solid var(--rule);padding:8px 10px;vertical-align:top;min-width:210px;text-align:left}
+table.mx thead th{position:sticky;top:0;background:var(--ink);color:var(--paper);z-index:3;font-size:12px}
+table.mx tbody th{position:sticky;left:0;background:var(--paper);min-width:110px;max-width:110px;z-index:2;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+table.mx thead th:first-child{left:0;z-index:4;min-width:110px}
+table.mx tr.hide,table.mx td.hide,table.mx th.hide{display:none}
+table.mx td .badge{margin-right:6px}
+table.mx tr.focus td{background:var(--hl)}
+table.mx tr.focus th{background:var(--hl);color:#000}
+/* ledger */
+table.led{width:100%;border-collapse:collapse;font-size:14px}
+table.led th,table.led td{border-bottom:1px solid var(--rule);padding:8px 8px;text-align:left;vertical-align:top}
+table.led th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+.verd{font:700 11px ui-monospace,Menlo,monospace;padding:2px 6px;border:1px solid;white-space:nowrap}
+.v-ok{color:var(--v);border-color:var(--v);background:var(--vbg)}
+.v-fix{color:var(--i);border-color:var(--i);background:var(--ibg)}
+.v-soft{color:var(--d);border-color:var(--d);background:var(--dbg)}
+.pat{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.pat .card h4{margin:0 0 4px;font-size:18px}
+.pat .card .was{font-size:13px;color:var(--ink2);border-top:1px dashed var(--rule);margin-top:8px;padding-top:6px}
+.spectrum{display:flex;align-items:stretch;border:1px solid var(--ink);margin:8px 0 2px;font:12px ui-monospace,Menlo,monospace}
+.spectrum span{flex:1;padding:6px 6px;border-right:1px solid var(--ink);text-align:center;background:var(--paper)}
+.spectrum span:last-child{border-right:none}
+.spectrum small{display:block;opacity:.65;font-size:10.5px}
+ul.src{font-size:13.5px;padding-left:18px}
+ul.src li{margin:4px 0;word-break:break-word}
+footer{padding:40px 0 70px;color:var(--ink2);font-size:13px;border-top:3px double var(--ink);margin-top:50px}
+.sha{font:12px ui-monospace,Menlo,monospace}
+table.sha-t{border-collapse:collapse;width:100%}
+table.sha-t td,table.sha-t th{border-bottom:1px solid var(--rule);padding:5px 8px;text-align:left;font-size:12.5px}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <div class="kicker">Investigation notebook · built 2026-11-12</div>
+  <h1>What is an <em>agent harness</em>, really?</h1>
+  <p class="lede">Six harnesses read from source: <b>Claude Code</b> (via its open SDK), <b>pi</b>, <b>Hermes Agent</b>, <b>SWE-agent</b>, <b>mini-swe-agent</b> and <b>Prime Intellect's stack</b>. Every claim carries an evidence label, and an adversarial reviewer tried to break the conclusions before they were written down.</p>
+  <div class="meta"><span>7 research agents · 1 adversarial reviewer</span><span>citations pinned to commit SHAs</span><span>nothing was executed; code was read only</span></div>
+</div></header>
+
+<nav class="sticky"><div class="wrap">
+  <a href="#legend">Method</a><a href="#what">1 · What</a><a href="#chapters">2 · Harnesses</a><a href="#matrix">3 · Compare</a><a href="#patterns">4 · Patterns</a><a href="#cc">5 · Reading Claude Code</a><a href="#review">6 · Review</a><a href="#limits">7 · Limits</a><a href="#sources">Sources</a>
+  <button id="theme" type="button" aria-label="Toggle theme">theme</button>
+</div></nav>
+
+<main class="wrap">
+
+<section id="legend">
+  <h2><span class="n">00 / METHOD</span>How to read the evidence</h2>
+  <p class="sub">Source code outranks documentation. If a statement could not be traced to a file I label it so. The filter at the top of each chapter hides everything that is not verified.</p>
+  <div class="legend">
+    <div><span class="badge b-V">VERIFIED</span><br>Read in code at the pinned commit. File and line given where known.</div>
+    <div><span class="badge b-D">DOCUMENTED</span><br>Stated by docs, README or a docstring. Not independently confirmed in an implementation.</div>
+    <div><span class="badge b-I">INFERRED</span><br>A deduction from what was or wasn't found. Treat as a hypothesis.</div>
+  </div>
+  <div class="card">
+    <b class="mono" style="font-size:12px;letter-spacing:.1em">PINNED SNAPSHOTS</b>
+    <table class="sha-t" id="shatable"></table>
+    <p class="sub" style="font-size:13px">These repos move fast, so line numbers drift. The SHAs come from the shallow clones used in this study. Claude Code's agent loop is closed source, so only its public SDK and public docs could be checked.</p>
+  </div>
+</section>
+
+<section id="what">
+  <h2><span class="n">01 / DEFINITION</span>What is a harness?</h2>
+  <p class="sub">The working definition from the primary sources: <b>Agent = Model + Harness</b>. The harness is every piece of code, configuration and execution logic that is not the model itself. <span class="badge b-D">DOCUMENTED</span> LangChain's "Anatomy of an Agent Harness" (Mar 2026) is where this formula is stated directly. Anthropic uses "harness" (and "scaffold" as a synonym) for the same thing.</p>
+  <p class="sub">Click a layer to see what it does and where each studied harness puts it.</p>
+  <div class="layers">
+    <div class="stack" id="stack"></div>
+    <div class="panel" id="layerpanel"></div>
+  </div>
+
+  <h3>Two meanings that get mixed up</h3>
+  <div class="cols">
+    <div class="card"><b>Agent harness</b><p>The runtime wrapped around the model while it acts: loop, tools, context, permissions, state. Claude Code, pi, Hermes Agent and SWE-agent are this kind. Evaluating an agent evaluates model <i>and</i> harness together (Anthropic, "Demystifying evals").</p></div>
+    <div class="card"><b>Evaluation harness</b><p>Test infrastructure that runs a model or agent against a benchmark and scores it: EleutherAI's lm-evaluation-harness, the SWE-bench grader, UK AISI's Inspect (which calls itself a framework). Older meaning, different thing.</p></div>
+  </div>
+
+  <div class="note"><b>Where sources disagree</b><br>
+  Nobody owns the term. The earliest dated use of "harness engineering" that the research found is Mitchell Hashimoto's blog post of 5 Feb 2026; Anthropic was already calling the Agent SDK a "harness" in Nov 2025. LangChain nests context engineering <i>inside</i> the harness; a summary of OpenAI's post (which the research could not fetch, 403) frames harness engineering as broader. Frameworks (LangChain, CrewAI) are libraries you build with; a harness is a runtime you work inside, but Anthropic's own SDK blurs that line. <span class="badge b-D">DOCUMENTED</span></div>
+  <div class="note"><b>Marketing vs evidence</b><br>
+  Weak, widely repeated: LangChain's "Top 30 to Top 5" Terminal Bench claim comes with no scores in the post, and figures like "88% of agent projects fail because of the harness" appear only on unsourced SEO pages. Strongest: Anthropic's March 2026 post reports real costs (a solo run $9 / 20 min vs a full harness $200 / ~6 h), though it is a single-vendor case study. Vendors sell what they describe.</div>
+</section>
+
+<section id="chapters">
+  <h2><span class="n">02 / SIX HARNESSES</span>Annotated execution flows</h2>
+  <p class="sub">Pick a harness, click through its path from request to termination. Each step is tied to code, and the code is quoted from the pinned snapshot (abridged excerpts are marked).</p>
+  <div class="pick" id="pick"></div>
+  <div class="ctrl"><span class="lab">Evidence</span><button id="onlyV" type="button" aria-pressed="false">only VERIFIED</button></div>
+  <div class="chap" id="chap"></div>
+</section>
+
+<section id="matrix">
+  <h2><span class="n">03 / SIDE BY SIDE</span>Same rubric, six harnesses</h2>
+  <p class="sub">Toggle columns to compare any subset. Click a row label to highlight a dimension.</p>
+  <div class="ctrl" id="colctl"></div>
+  <div class="mwrap"><table class="mx" id="mx"></table></div>
+</section>
+
+<section id="patterns">
+  <h2><span class="n">04 / PATTERNS</span>What recurs, what differs, what surprised</h2>
+  <p class="sub">These are the conclusions that survived review. The wording was softened wherever the reviewer found counterexamples; the "was" line shows the original claim.</p>
+  <div class="pat" id="pat"></div>
+
+  <h3>Spectra instead of categories</h3>
+  <p class="sub">Permissions, from "the core does nothing" to "policy is built in":</p>
+  <div class="spectrum">
+    <span>SWE-agent<small>blocklist + Docker</small></span>
+    <span>mini DefaultAgent<small>none; env is the wall</small></span>
+    <span>pi<small>none; tool_call veto hook</small></span>
+    <span>mini CLI<small>confirm + whitelist</small></span>
+    <span>Claude Code<small>6 modes + callback</small></span>
+    <span>Hermes<small>floors, patterns, smart mode</small></span>
+  </div>
+  <p class="sub" style="margin-top:14px">Context handling, from "append and pray" to "summarize":</p>
+  <div class="spectrum">
+    <span>mini<small>linear, never trimmed</small></span>
+    <span>SWE-agent<small>view-time processors</small></span>
+    <span>verifiers bash<small>reactive + threshold summary</small></span>
+    <span>pi<small>threshold compaction, tree</small></span>
+    <span>Hermes<small>3-tier prompt + compressor + memory</small></span>
+  </div>
+  <p class="sub" style="font-size:13px">Ordering is an editorial judgment from the evidence in the matrix, not a measured score. <span class="badge b-I">INFERRED</span></p>
+</section>
+
+<section id="cc">
+  <h2><span class="n">05 / FOR THE LEARNER</span>Reading Claude Code through the others</h2>
+  <p class="sub">Claude Code's loop is closed, so the open harnesses are the way to see how the same ideas look in code. Each pairing below is a concept you meet in Claude Code and where to read an open implementation.</p>
+  <table class="led" id="cctab"></table>
+</section>
+
+<section id="review">
+  <h2><span class="n">06 / ADVERSARIAL REVIEW</span>What the reviewer broke</h2>
+  <p class="sub">A separate agent re-opened the source and tried to falsify the research. Of the proposed cross-harness conclusions, most needed rewording. These rows are the audit trail.</p>
+  <div class="ctrl" id="ledctl"></div>
+  <table class="led" id="led"></table>
+</section>
+
+<section id="limits">
+  <h2><span class="n">07 / LIMITS</span>What this study did not establish</h2>
+  <ul id="lim"></ul>
+</section>
+
+<section id="sources">
+  <h2><span class="n">SOURCES</span>Where to check me</h2>
+  <ul class="src" id="srclist"></ul>
+</section>
+
+</main>
+<footer><div class="wrap">Harness Field Notes · self-contained file, no network requests · evidence labels are part of the content, not decoration.</div></footer>
+
+<script>
+"use strict";
+/* ---------- DATA ---------- */
+const SHAS = [
+ ["pi-mono (badlogic)","d36266e06669c6991a7c9509d1da04d18d30378d"],
+ ["hermes-agent (NousResearch)","c9b20d7bc08dec1e10779a06d7d9073bc6e7e418"],
+ ["SWE-agent","3ea751c087f32b16e039a2233dd6eefecef325d5"],
+ ["mini-swe-agent","04d809ceab9df28f9adaed044884180159172930"],
+ ["verifiers (PrimeIntellect-ai)","229515339b83de72217ade1b6bb80f386e9958f7"],
+ ["prime-cli","5939d2053c7307ad1543fa8fa3d8087a346b2eca"],
+ ["prime-environments","cf220ee86500e94b5415d8b226557ce5d950f1db"],
+ ["claude-agent-sdk-python","22b8eb9c19adfa78759b79e22bd664a57843bb06"],
+ ["anthropics/claude-code (public repo, no loop code)","89eb88e3357be13ae7fcf8966144ad32f44def33"]
+];
+
+const LAYERS = [
+ {k:"Model", tag:"not harness", d:"The weights behind an API. Everything below is the harness.", rows:[["all","Reached through litellm (SWE-agent, mini), pi-ai's provider registry (pi), 4 transports (Hermes), an OpenAI-compatible interception endpoint (verifiers)."]]},
+ {k:"Loop", tag:"harness", d:"Call the model, run what it asked for, feed results back, decide when to stop.", rows:[
+   ["mini","agents/default.py:96 · while True / try / finally save"],
+   ["SWE-agent","agent/agents.py:1284 · while not step_output.done"],
+   ["pi","packages/agent/src/agent-loop.ts:188,192 · nested while"],
+   ["Hermes","agent/conversation_loop.py:1752 · _run_phase pipeline"],
+   ["verifiers","v1/harnesses/utils/core.py:383 · run_chat_loop"],
+   ["Claude Code","closed binary; SDK spawns it (subprocess_cli.py:523)"]]},
+ {k:"Tools", tag:"harness", d:"What the model can do to the world, plus how calls are validated and executed.", rows:[
+   ["mini","one tool: bash"],["SWE-agent","bundles of executables + config.yaml"],["pi","read, bash, edit, write by default"],["Hermes","auto-discovered registry, toolsets, tool_search bridge"],["Claude Code","documented built-ins: Read, Edit, Bash, Agent, Skill..."]]},
+ {k:"Context", tag:"harness", d:"Deciding what the model sees: prompt assembly, truncation, summaries, memory files.", rows:[
+   ["mini","linear list; template truncates huge outputs"],["SWE-agent","history processors at view time"],["pi","tagged system prompt + compaction"],["Hermes","3 cache tiers + compressor + frozen memory snapshot"]]},
+ {k:"Permissions", tag:"harness", d:"Who or what may stop a tool call, and what contains the damage if nothing does.", rows:[
+   ["pi","none built in; tool_call hook can block"],["mini","DefaultAgent none; CLI confirm mode"],["Hermes","hard floors, patterns, smart LLM mode"],["Claude Code","6 permission modes + can_use_tool callback"],["verifiers","sandbox runtime + tool gate"]]},
+ {k:"State", tag:"harness", d:"Sessions and trajectories: what is written, when, and whether it can be resumed.", rows:[
+   ["mini","JSON after every step, no resume"],["SWE-agent",".traj per step, skip finished instances"],["pi","JSONL tree, id / parentId"],["Hermes","SQLite WAL + FTS5, persist before execute"],["Claude Code","JSONL under ~/.claude/projects"]]},
+ {k:"Extensions", tag:"harness", d:"Hooks, skills, MCP, sub-agents: how the harness is bent without forking it.", rows:[
+   ["pi","TS extensions, ~30 events; skills; MCP built-in"],["Hermes","~50 hooks, plugins, MCP client, delegate_task"],["Claude Code","hooks, skills, subagents, MCP (SDK exposes 10 hook events)"],["SWE-agent","YAML configs, bundles, retry/review loops"]]}
+];
+
+/* flows: t=title, n=note, l=label, c=cite, code */
+const H = [
+{id:"cc", name:"Claude Code", repo:"anthropics/claude-agent-sdk-python @22b8eb9 · docs · public claude-code repo",
+ kind:"Product runtime · loop is closed source",
+ tag:"The SDK is a thin controller. The agent loop lives in the closed `claude` binary, so loop internals, compaction and the auto-mode classifier cannot be verified from source.",
+ flow:[
+  {t:"SDK spawns the CLI", l:"V", n:"The Python SDK does not run the loop. It launches the claude binary and talks stream-json over stdin/stdout.", c:"claude_agent_sdk/_internal/transport/subprocess_cli.py:523", code:`cmd = [self._cli_path, "--output-format", "stream-json", "--verbose"]
+# ... and at ~742:
+cmd.extend(["--input-format", "stream-json"])`},
+  {t:"Control protocol", l:"V", n:"A bidirectional JSON protocol. The CLI asks the SDK for permission decisions, hook callbacks and in-process MCP messages.", c:"_internal/query.py", code:`# SDK -> CLI: initialize, interrupt, set_permission_mode, set_model,
+#             rewind_files, mcp_status, get_context_usage, stop_task ...
+# CLI -> SDK: can_use_tool, hook_callback, mcp_message
+# anything else -> "Unsupported control request subtype"`},
+  {t:"Permission modes", l:"V", n:"Six modes exist as a literal type. What each one does internally is documented, not verifiable.", c:"types.py:25-27", code:`PermissionMode = Literal["default", "acceptEdits", "plan",
+                         "bypassPermissions", "dontAsk", "auto"]`},
+  {t:"Hooks", l:"V", n:"The SDK exposes exactly 10 hook events. The docs list a larger set (33), so the SDK is a subset.", c:"types.py:286-297", code:`# PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop,
+# SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest`},
+  {t:"Result", l:"D", n:"The stream ends in a ResultMessage with turn count, cost, and a terminal_reason (completed, max_turns, aborted_*). Limits: --max-turns, --max-budget-usd.", c:"code.claude.com docs · types.py ResultMessage", code:`# documented terminal_reason values:
+# "completed" | "max_turns" | "aborted_streaming" | "aborted_tools"`}
+ ],
+ facts:{
+  loop:["Closed binary. Documented as gather context, take action, verify, repeat. The SDK shows turn counts and message types but not the loop code.","D"],
+  term:["ResultMessage.terminal_reason; --max-turns and --max-budget-usd caps.","D"],
+  tools:["Documented built-ins include Read, Write, Edit, Bash, Glob, Grep, WebFetch, Agent, Skill, TaskCreate, Cron*. Implementations are not source-verifiable.","D"],
+  perm:["6 modes (typed in the SDK) and a can_use_tool callback with allow / deny / updated permissions. Rule evaluation order and the auto-mode classifier are not verifiable.","V"],
+  ctx:["Auto-compaction into a summary; CLAUDE.md files concatenated into context. SDK exposes get_context_usage and a PreCompact hook.","D"],
+  state:["JSONL transcripts under ~/.claude/projects; resume, continue, fork-session; file checkpoint rewind.","V"],
+  ext:["Hooks (10 in SDK), skills (SKILL.md), subagents (AgentDefinition), MCP incl. in-process SDK servers.","V"],
+  model:["Not investigated in depth.","I"]
+ },
+ surp:[
+  ["The open SDK repo contains no agent loop, only a controller for a subprocess.","V"],
+  ["The public claude-code repo holds docs, example hooks, a changelog and mods, but no loop, tool or compaction code.","V"],
+  ["The long-running pattern (feature list JSON, progress file, git commits) is a prompt-and-file convention, not built-in machinery.","I"]
+ ]},
+
+{id:"pi", name:"pi", repo:"badlogic/pi-mono @d36266e · packages/agent, coding-agent, ai",
+ kind:"Product runtime · minimal by design",
+ tag:"Small defaults, big hook surface. No permission system and no turn cap, but sessions are trees and compaction is carefully hardened.",
+ flow:[
+  {t:"Two nested loops", l:"V", n:"The outer loop handles queued follow-up messages; the inner loop handles tool calls and steering messages.", c:"packages/agent/src/agent-loop.ts:188,192 (runLoop at 172)", code:`while (true) {                                   // outer: follow-ups
+  let hasMoreToolCalls = true;
+  while (hasMoreToolCalls || pendingMessages.length > 0) {   // inner: tools / steering
+    ...
+    const message = await streamAssistantResponse(currentContext, config, signal, emit, streamFunction);
+    newMessages.push(message);
+// abridged`},
+  {t:"Validate + veto", l:"V", n:"Each call is validated, then passed through beforeToolCall. With no extension handler, everything is allowed.", c:"agent-loop.ts prepareToolCall (718) · agent-session.ts:721-727", code:`private async _beforeToolCall({ toolCall, args }, parentToolCallId?) {
+  const runner = this._extensionRunner;
+  if (!runner.hasHandlers("tool_call")) { return undefined; }
+  ...`},
+  {t:"Execute", l:"V", n:"Preflight (incl. hooks) runs sequentially; executions run concurrently unless a tool is marked sequential; results are emitted in original order. Output is clipped at 2000 lines or 50KB.", c:"agent-loop.ts:518, 596 · core/tools/truncate.ts:11-12", code:`DEFAULT_MAX_LINES = 2000
+DEFAULT_MAX_BYTES = 50 * 1024   // whichever is hit first`},
+  {t:"Compact when needed", l:"V", n:"Threshold compaction summarizes with an LLM and keeps the recent tail. Overflow gets one retry.", c:"coding-agent/src/core/compaction/compaction.ts:126-130", code:`export const DEFAULT_COMPACTION_SETTINGS: CompactionSettings = {
+	enabled: true, reserveTokens: 16384, keepRecentTokens: 20000,
+};`},
+  {t:"Persist as a tree", l:"V", n:"Append-only JSONL; every entry has id and parentId. The first write is deferred until a real conversation exists, then the file is created exclusively.", c:"coding-agent/src/core/session-manager.ts:1180-1197", code:`if (!this.flushed) {
+	if (!this._hasConversation()) return;
+	const fd = openSync(this.sessionFile, "wx");
+	...
+	this.flushed = true;
+} else {
+	appendFileSync(this.sessionFile, /* serialized entry + newline */);
+}
+// abridged and paraphrased: the real call uses a template literal`},
+  {t:"Stop", l:"V", n:"No tool calls, no steering messages, no follow-ups, then agent_end. Errors and aborts end immediately. A search for maxTurns / maxIterations found nothing.", c:"agent-loop.ts:172-340", code:`if (message.stopReason === "error" || message.stopReason === "aborted") {
+  ...
+  await emit({ type: "agent_end", messages: newMessages });
+  return;
+}
+// abridged`}
+ ],
+ facts:{
+  loop:["Nested while loops with steering and follow-up queues.","V"],
+  term:["Natural stop; error/abort; a tool batch can set terminate; a finishTurn hook can end. No turn cap found by grep.","V"],
+  tools:["Defaults: read, bash, edit, write (settings-manager.ts:85). TypeBox schemas; pluggable Operations objects so tools can target SSH or a VM.","V"],
+  perm:["README.md:90: no built-in permission system. A tool_call hook can block; an example permission-gate extension exists. Containment is left to Docker, VMs, etc.","V"],
+  ctx:["XML-tagged prompt sections; AGENTS.md / CLAUDE.md loaded; compaction (reserve 16384, keep 20000). No persistent memory subsystem found.","V"],
+  state:["JSONL tree with id/parentId, branch navigation, in-memory option.","V"],
+  ext:["TypeScript extensions (~30 events), skills with progressive disclosure, MCP as a built-in extension (default exposure: codemode). Sub-agents exist only as an example (README.md:19).","V"],
+  model:["pi-ai: ~10 wire APIs behind a registry, ~98 provider files; agent core takes an injectable stream function.","V"]
+ },
+ surp:[
+  ["The tool set is written into the transcript (toolsAdded / toolsRemoved on system messages), so replay and branching recover it.","V"],
+  ["If output is cut off by the length limit, every tool call in that message is failed instead of executed with half-streamed arguments.","V"],
+  ["MCP tools are by default not shown as individual tools. They are reachable through a sandboxed JavaScript tool (codemode).","V"],
+  ["packages/durable looks like a separate harness; it is not imported by coding-agent. Its purpose is a guess.","I"]
+ ]},
+
+{id:"hermes", name:"Hermes Agent", repo:"NousResearch/hermes-agent @c9b20d7",
+ kind:"Product runtime · maximal, heavily decomposed",
+ tag:"The loop lives in agent/conversation_loop.py (not run_agent.py). Design is dominated by one constraint: keep the prompt-cache prefix stable.",
+ flow:[
+  {t:"Phase pipeline", l:"V", n:"A synchronous loop of named phases. Each phase returns a verdict (continue / break / return). The loop is in conversation_loop.py, even though run_agent.py is the facade.", c:"agent/conversation_loop.py:1752-1756, _run_phase at 1557", code:`while _prelude_action != "break" and (
+    (s.api_call_count < agent.max_iterations and agent.iteration_budget.remaining > 0) or agent._budget_grace_call):
+    if _run_phase(begin_iteration, agent, s).action == "break": break
+    _run_phase(prepare_iteration, agent, s)
+    ...`},
+  {t:"Persist before executing", l:"V", n:"The assistant tool-call row is written to SQLite before any tool runs, so a destructive tool that restarts the process still resumes cleanly.", c:"agent/turn_tool_round.py (run_tool_round)", code:`# Persist the tool-call turn before any tool side effects so resume sees the executed
+# block if a destructive tool restarts Hermes.
+_tool_turn_persisted = agent._flush_messages_to_session_db(messages, conversation_history)
+...
+if _tool_turn_persisted is False:
+    _turn_exit_reason = "session_persistence_failed"; ...`},
+  {t:"Guards, then dispatch", l:"V", n:"Floors that can never be bypassed run first. Then yolo / allowlist / unattended policy. Registry dispatch turns every exception into a tool error.", c:"tools/approval.py:1294 · tools/registry.py:1084", code:`blocked = _floor_block(command, sudo_guard=True)
+if blocked is not None: return blocked
+...
+if _yolo_active() or approval_mode == "off": return _approved()
+if _command_matches_permanent_allowlist(command): return _allowlisted(command)
+# abridged`},
+  {t:"Stop gates", l:"V", n:"A text-only reply is not the end. Gates can inject a nudge and force another round: verify-on-stop, a pre_verify plugin hook, a Kanban guard, late LSP diagnostics.", c:"agent/turn_stop_gates.py:134 · turn_final_response.py:106", code:`# apply_stop_gates(...) may append a synthetic user "nudge" row
+# and force continue_turn=True. Re-prompts per turn are capped at 2.`},
+  {t:"Review fork", l:"V", n:"Every 10 turns or 10 tool iterations a daemon thread forks an AIAgent that reviews the conversation and may write memory or skills. tools[] stays byte-identical to the parent; the restriction is applied at dispatch.", c:"agent/background_review.py:940-941,1000 · agent/agent_init.py:1160,1236", code:`# so tools[] is byte-identical (Anthropic's cache key includes it);
+# the runtime whitelist restricts dispatch
+...
+review_agent = AIAgent(**_fork_init_kwargs(...))`}
+ ],
+ facts:{
+  loop:["Phase pipeline in agent/conversation_loop.py:1752 with a retry loop inside.","V"],
+  term:["Stop gates; IterationBudget; interrupts; persistence failure; guardrail halt; wall-clock budget. max_iterations is unlimited in code (sys.maxsize, run_agent.py:241) while several docs and a docstring say 500.","V"],
+  tools:["AST-scanned auto-discovery of tools/*.py (registry.py:121); OpenAI-format schemas; toolsets; optional tool_search / tool_describe / tool_call bridge; tool_call args canonicalized for cache stability.","V"],
+  perm:["Hard-line floors (rm -rf /, mkfs, ...), dangerous-pattern tier, default mode smart (LLM guardian), unattended deny modes, hosted-scope deny-by-default allowlist. file_safety.py states the guards are NOT a security boundary.","V"],
+  ctx:["System prompt in 3 tiers (stable / context / volatile), cached, rebuilt only after compression. Compressor default threshold 0.50; memory is a frozen snapshot (memory_tool_store.py:655-658), 2200 / 1375 char caps.","V"],
+  state:["SQLite WAL with FTS5, schema v33; messages carry an api_content byte-fidelity sidecar. Resume semantics beyond persistence were not read.","V"],
+  ext:["~50 hooks; plugins (providers, platforms, memory); MCP client; shell hooks compatible with Claude Code's exit-code-2 convention; delegate_task sub-agents with a blocked tool list; ~25 chat gateways.","V"],
+  model:["Internal format is OpenAI chat. Four transports. For chat-completions it relies on the server to parse tool calls. A client-side <tool_call> parser exists only in the ACP bridge path.","V"]
+ },
+ surp:[
+  ["Self-improvement is counter-triggered, not decided by the main model: a forked agent reviews on a schedule, with a prompt that says a pass that does nothing is a missed learning opportunity.","V"],
+  ["Docs and code disagree on max_iterations (500 / 90 / 60 in docs; unlimited in code; subagent cap 250 in config vs 50 in a docstring).","V"],
+  ["Roughly 300 modules under agent/ and 80 hermes_state files. The comments cite many numbered production bugs, which suggests accreted fixes rather than a designed shape.","I"],
+  ["Sub-agents cannot ask the user, write shared memory, send messages, schedule work or delegate again.","V"]
+ ]},
+
+{id:"swe", name:"SWE-agent", repo:"SWE-agent/SWE-agent @3ea751c",
+ kind:"Research scaffold · the Agent-Computer Interface",
+ tag:"Tools are real executables with a YAML definition. The harness reads the patch from a file, not from what the model says.",
+ flow:[
+  {t:"Step loop", l:"V", n:"The entire run is a loop until a step reports done. The trajectory is saved after every step.", c:"sweagent/agent/agents.py:1284-1286 (DefaultAgent.run)", code:`while not step_output.done:
+    step_output = self.step()
+    self.save_trajectory()`},
+  {t:"Parse action", l:"V", n:"A tool bundle's definition produces both the function-calling schema and the prompt documentation. The parser shell-quotes arguments and renders the command line.", c:"sweagent/tools/commands.py:133-165 · parsing.py:397-439", code:`# Command.get_function_calling_tool()  -> OpenAI-style schema
+# generate_command_docs()               -> {{command_docs}} text
+# FunctionCallingParser requires exactly one tool call per step`},
+  {t:"Run in a persistent shell", l:"V", n:"A SWE-ReX deployment (Docker by default) provides a persistent bash session; each tool is an executable uploaded to /root/tools/<name>.", c:"sweagent/environment/swe_env.py", code:`self.deployment.runtime.run_in_session(
+    BashAction(command=input, timeout=timeout, check=rex_check))`},
+  {t:"Tools steer the loop", l:"V", n:"Tools can print magic strings that the harness interprets: retry with output, retry without, or forfeit.", c:"sweagent/agent/agents.py:219-221", code:`RETRY_WITH_OUTPUT_TOKEN = "###SWE-AGENT-RETRY-WITH-OUTPUT###"
+RETRY_WITHOUT_OUTPUT_TOKEN = "###SWE-AGENT-RETRY-WITHOUT-OUTPUT###"
+EXIT_FORFEIT_TOKEN = "###SWE-AGENT-EXIT-FORFEIT###"`},
+  {t:"View-time history", l:"V", n:"The raw history is never rewritten. Processors reshape what the model sees on each step (e.g. old observations replaced by an elision note).", c:"agent/agents.py:540-554 · history_processors.py", code:`messages = filtered_history
+for processor in self.history_processors:
+    messages = processor(messages)`},
+  {t:"Submit", l:"V", n:"The submit tool writes the diff to /root/model.patch and prints a sentinel. The harness then reads the file. On any error, it runs the same git diff itself (autosubmit).", c:"tools/submit/bin/submit · agents.py handle_submission", code:`git add -A
+git diff --cached > /root/model.patch
+echo "<<SWE_AGENT_SUBMISSION>>"`}
+ ],
+ facts:{
+  loop:["while not step_output.done (agents.py:1284); forward_with_handling requeries up to 3 times on format errors.","V"],
+  term:["Submit sentinel, literal exit, or autosubmit after a long list of error classes (exit_cost, exit_format, exit_command_timeout, ...).","V"],
+  tools:["Bundles of executables with config.yaml, shared state through a registry file, heredoc rewriting for multi-line commands, persistent bash session in a SWE-ReX deployment.","V"],
+  perm:["A prefix blocklist (vim, nano, less, tail -f, make, bare python/bash...) and the container as boundary.","V"],
+  ctx:["Append-only history plus processors (LastNObservations, ClosedWindow, CacheControl, RemoveRegex...). No summarizer; the references to one in reviewer.py are commented out.","V"],
+  state:[".traj per step including the full query; .pred and a config yaml. Batch mode skips finished instances; it never resumes mid-run.","V"],
+  ext:["YAML configs deep-merged; RetryAgent with ScoreRetryLoop / ChooserRetryLoop; per-step best-of-n samplers.","V"],
+  model:["litellm; function calling or thought-action text parsing chosen by config, not auto-detected.","V"]
+ },
+ surp:[
+  ["Submission is a dedicated tool plus a sentinel, and the patch is read from a file the tool wrote, not parsed from output.","V"],
+  ["Retry tokens do not increment the failure counter, so a looping tool is stopped only by cost or call limits.","I"],
+  ["run_single.py:152 has an inverted condition (if actions is not None: actions = RunSingleActionConfig()). It is inert because self.actions is never read.","V"],
+  ["Retry attempts restart the whole container, not just the repo.","V"]
+ ]},
+
+{id:"mini", name:"mini-swe-agent", repo:"SWE-agent/mini-swe-agent @04d809c · src/minisweagent",
+ kind:"Research scaffold · deliberately tiny",
+ tag:"The loop is about 30 lines. Everything terminal is an exception carrying a final message.",
+ flow:[
+  {t:"The loop", l:"V", n:"Control flow by exception. The trajectory is saved in finally, after every step. default.py is 190 lines in total.", c:"agents/default.py:96-123", code:`while True:
+    try:
+        self.step()
+        ...
+    except FormatError as e:
+        ...
+    except InterruptAgentFlow as e:
+        self.add_messages(*e.messages)
+    except Exception as e:
+        self.handle_uncaught_exception(e); raise
+    finally:
+        self.save(self.config.output_path)
+    if self.messages[-1].get("role") == "exit":
+        break`},
+  {t:"One tool: bash", l:"V", n:"The model gets a single bash function. In the default model class, tools=[BASH_TOOL] is sent with every call. A text-regex mode exists as the alternative.", c:"models/litellm_model.py:66-70 · models/utils/actions_toolcall.py:11-27", code:`litellm.completion(model=..., messages=..., tools=[BASH_TOOL], ...)`},
+  {t:"Fresh shell each time", l:"V", n:"Each action is its own subprocess (or docker exec). cd and exports do not persist; the prompt tells the model to chain commands.", c:"environments/local.py:72-91 · environments/docker.py:107-113", code:`subprocess.Popen(command, shell=True, ..., start_new_session=True)
+# timeout -> os.killpg(..., SIGKILL), default 30 s`},
+  {t:"Observation + truncation", l:"V", n:"Truncation is a Jinja template, not Python: 10,000 characters or more become the first 5,000 plus the last 5,000.", c:"config/mini.yaml:112-127", code:`{%- if output.output | length < 10000 -%}
+  ...
+  "output_head": {{ output.output[:5000] | tojson }},
+  "output_tail": {{ output.output[-5000:] | tojson }},
+  "elided_chars": {{ output.output | length - 10000 }},`},
+  {t:"Submit by sentinel", l:"V", n:"The first output line must equal the sentinel and the return code must be 0. The rest of the output becomes the submission, raised as an exception that becomes an exit message.", c:"environments/local.py:46-49", code:`lines = output.get("output", "").lstrip().splitlines(keepends=True)
+if lines and lines[0].strip() == "COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT" and output["returncode"] == 0:
+    submission = "".join(lines[1:])
+    raise Submitted({"role": "exit", ...})`}
+ ],
+ facts:{
+  loop:["DefaultAgent.run at agents/default.py:88-124; the README's '100 lines' counts logic only (file is 190 lines).","V"],
+  term:["Everything ends as a message with role exit: Submitted, LimitsExceeded (cost 3.0 default; step limit 0 = unlimited), TimeExceeded, RepeatedFormatError (3), uncaught exception.","V"],
+  tools:["bash only. Environments: local, docker, singularity, swerex, bubblewrap, contree. Multiple tool calls in one response are allowed.","V"],
+  perm:["DefaultAgent has none. The `mini` CLI uses InteractiveAgent: modes human / confirm / yolo, with regex whitelist_actions (default mode confirm).","V"],
+  ctx:["Linear list, never summarized. Message history and trajectory are the same list. Only truncation is the template. Anthropic prompt-cache markers go on the last message.","V"],
+  state:["Writes JSON after every step. No resume code found in DefaultAgent; the SWE-bench runner skips instances already in preds.json.","V"],
+  ext:["Model, Environment and Agent are typing.Protocols; string-name registries with importlib; YAML config with key=value overrides.","V"],
+  model:["litellm by default; tool-calling is the default and recommended, text-regex parsing is the older alternative (a docstring says so).","V"]
+ },
+ surp:[
+  ["The README says mini does not need tool-calling. At this commit tool-calling is the default and the text mode is the legacy path.","V"],
+  ["A failed model call (format error) is still billed: the agent adds its cost by hand.","V"],
+  ["In human mode the person's typed commands flow through the same pipeline as model actions.","V"],
+  ["The sentinel check is copied into each environment class; I only read local and docker.","I"]
+ ]},
+
+{id:"prime", name:"Prime Intellect", repo:"verifiers @2295153 · prime-cli @5939d20 · prime-environments @cf220ee · prime-agent (not cloned)",
+ kind:"RL stack · the trajectory is the product",
+ tag:"Verifiers mostly does not own the loop. It runs other people's agents as black boxes and records everything at the model-proxy boundary.",
+ flow:[
+  {t:"The contract", l:"V", n:"A harness can be any program, as long as every model call goes through verifiers' interception endpoint.", c:"verifiers/v1/harness.py:313-333 (Harness.launch docstring)", code:`"""...The interception is the contract, not the process: a harness may run its
+loop in-process instead of launching a program, as long as every model call
+goes through endpoint + secret - it then returns a synthetic success
+ProgramResult, and the trace is the record of what ran."""`},
+  {t:"One in-house loop", l:"V", n:"run_chat_loop is the bundled bash harness: call the model, run tools in order, stop on a text-only reply or a context overflow.", c:"v1/harnesses/utils/core.py:383-407", code:`while True:
+    try:
+        completion, messages = await compactor.complete(messages)
+    except APIStatusError as error:
+        ...
+    message = completion.choices[0].message
+    messages.append(message.model_dump(exclude_none=True))
+    if not message.tool_calls:
+        return
+# abridged`},
+  {t:"Gate tool calls", l:"V", n:"Harnesses that support it ask the server before executing each tool. Task hooks can deny and the model sees the denial message.", c:"v1/session.py:477-598 (gate_tool_calls, decide_tool)", code:`# POST /tool -> {"action": "deny", "message": ...}
+# the harness appends the denial instead of running the call`},
+  {t:"Record at the proxy", l:"V", n:"The trace is built from model traffic as it passes through the interception server, not from what the agent reports.", c:"v1/interception/server.py:674-735 (record_call)", code:`# each provider exchange is appended as a ModelCall; the trace holds
+# nodes, calls, rewards, metrics, stop_condition, errors, timing`},
+  {t:"Reward", l:"V", n:"The trace's reward is the sum of weighted reward values. None means scoring did not run.", c:"v1/trace.py:671-672", code:`@computed_field
+@property
+def reward(self) -> float:
+    return sum(r.value for r in self.rewards.values() if r is not None)`}
+ ],
+ facts:{
+  loop:["v1: the loop is the harness program (Claude Code, Codex, pi, mini-swe-agent, Hermes and Prime Agent are wrapped). Only run_chat_loop is in-house. Legacy API: MultiTurnEnv owns the loop.","V"],
+  term:["Text-only reply or overflow (bash harness); RolloutLimits (turns and token caps, soft by one turn); @vf.stop hooks; per-stage timeouts.","V"],
+  tools:["Harness-native tools; MCP Toolsets from @vf.tool methods that can run in-process, remote or in a service VM; a /tool gate.","V"],
+  perm:["Isolation is the runtime (subprocess for debugging, docker with an egress proxy, remote Prime sandbox). The bash tool itself is unsandboxed. 'Permission as task policy code' is a reading of the gate, not a stated design.","I"],
+  ctx:["Messages form a graph of nodes stored once each. The bash harness's Compactor summarizes with an LLM when a model turn exhausts context or a threshold is hit.","V"],
+  state:["traces.jsonl per episode; token ids and logprobs on branches for training; Harness.resume can relaunch a segment where supported.","V"],
+  ext:["Taskset / Harness / Env subclasses loaded by hub id; prime env push/install; 109 legacy environments in prime-environments.","V"],
+  model:["One OpenAI-compatible endpoint, three dialects (chat completions, responses, anthropic messages); separate eval and train clients.","V"]
+ },
+ surp:[
+  ["'Prime Agent' is a real product (a Rust 'self-improving RLM agent' with a persistent Python REPL as its one tool), in a repo that was not cloned. What is known comes from its README, and verifiers wraps release 0.10.2.","D"],
+  ["The cloned verifiers has no MultiTurnEnv or ToolEnv. prime-environments still imports the legacy API, which was read from the PyPI wheel 0.1.11, not the pinned commit.","V"],
+  ["Token-exact bookkeeping: concatenating node token ids along a path must reproduce the exact prompt and completion the model saw. Training works only with chat-completions harnesses via the renderer.","I"],
+  ["The agent session is closed before grading so a still-running agent cannot change the workspace while it is scored.","D"]
+ ]}
+];
+
+const DIMS = [["loop","Loop"],["term","Termination"],["tools","Tools"],["perm","Permissions"],["ctx","Context"],["state","State"],["ext","Extensibility"],["model","Models"]];
+
+const PATTERNS = [
+ {t:"The loop is rarely the hard part", b:"In mini-swe-agent the loop is about 30 lines. Most of the engineering in the larger harnesses sits around it: context, permissions, persistence. Hermes is the counterexample, where the loop itself is a multi-phase pipeline with retries and gates.", was:"Was: 'every loop is simple'. Reviewer: true for mini and SWE-agent, an understatement for pi and Hermes. Claude Code's loop is not visible at all.", l:"V"},
+ {t:"Stopping is by convention, usually with structure behind it", b:"mini uses a sentinel on the first output line (turned into an exception). SWE-agent uses a submit tool plus a sentinel and reads a file. pi and the verifiers bash harness stop on a reply with no tool calls. Hermes can refuse that stop and inject a nudge. Budgets are a second stop path in mini (cost 3.0), SWE-agent (cost and call limits) and Hermes (IterationBudget).", was:"Was: 'convention rather than a dedicated tool'. Reviewer: wrong for SWE-agent, which has a dedicated tool.", l:"V"},
+ {t:"Permissions are a spectrum, and isolation is the usual answer", b:"pi ships no policy but a veto hook. mini's batch agent has none; its CLI asks for confirmation. Hermes layers floors, patterns and an LLM guardian; Claude Code has six modes. SWE-agent and verifiers rely on the container or sandbox as the real boundary. Hermes itself says its file guards are not a security boundary.", was:"Was: 'mini has none'. Reviewer: only DefaultAgent; the `mini` CLI confirms by default. 'Verifiers turns permission into task policy' is unverified and downgraded.", l:"V"},
+ {t:"Prompt caching shapes architecture", b:"Hermes keeps tools[] byte-identical in its review fork, freezes the memory snapshot and rebuilds the system prompt only after compression. SWE-agent has a CacheControlHistoryProcessor and mini marks only the last message. The cost of cache misses shows up in design decisions.", was:"Added after review: this dimension had been missed. pi's cache warming module exists but was not read.", l:"V"},
+ {t:"Hooks and skills recur in the product harnesses", b:"pi, Hermes and Claude Code all have hooks and SKILL.md-style skills; Hermes even accepts Claude Code's exit-code-2 hook convention. This is a common pattern in three product runtimes, not a universal one: SWE-agent, mini and verifiers have neither as products.", was:"Was: 'extensibility has converged'. Reviewer: pi has no built-in sub-agents (README.md:19) and MCP tools are hidden behind codemode by default.", l:"V"},
+ {t:"Persistence runs from 'write after each step' to 'resume and branch'", b:"mini and SWE-agent save after every step but only skip finished instances. pi builds a tree in one JSONL file. Hermes uses SQLite with full-text search and persists tool-call rows before running them. Verifiers can resume a harness segment.", was:"Was: 'only pi and Hermes support resume'. Reviewer: verifiers also does, and Claude Code resumes sessions.", l:"V"},
+ {t:"'Harness' is a spectrum from product to research scaffold", b:"Claude Code, pi and Hermes optimise for a person's experience. SWE-agent, mini and verifiers treat the trajectory as the output. Blurs: mini ships a human-facing CLI, Hermes exports training trajectories, verifiers wraps whole products.", was:"Was: 'two different kinds'. Reviewer: too binary.", l:"I"},
+ {t:"Surprising choices worth stealing", b:"SWE-agent reads the patch from a file the tool wrote. Hermes forks a reviewer that inherits the parent's cache. pi records the tool set in the transcript. Verifiers records at the proxy so the agent cannot rewrite its own history. mini bills the failed call.", was:"", l:"V"}
+];
+
+const CCMAP = [
+ ["CLAUDE.md","pi loads AGENTS.override.md, AGENTS.md, CLAUDE.md (resource-loader.ts:213); Hermes loads AGENTS.md / CLAUDE.md as project context.","V"],
+ ["Hooks (PreToolUse exit 2 blocks)","pi: tool_call extension event (agent-session.ts:721). Hermes: shell hooks with the same exit-2 convention (agent/shell_hooks.py).","V"],
+ ["Permission modes","Compare Hermes tools/approval.py (floors, patterns, smart) and mini agents/interactive.py (human / confirm / yolo).","V"],
+ ["Skills (SKILL.md)","pi core/skills.ts and Hermes tools/skill_manager_tool.py. Only name and description enter the prompt.","V"],
+ ["Compaction","pi core/compaction/compaction.ts and Hermes agent/context_compressor.py. Claude Code's own algorithm is not verifiable.","V"],
+ ["Subagents","Hermes tools/delegate_tool.py with DELEGATE_BLOCKED_TOOLS; pi's subagent example spawns a separate pi process.","V"],
+ ["Sessions / --resume","pi session-manager.ts (JSONL tree), Hermes hermes_state.py (SQLite).","V"],
+ ["Agent SDK","Open source in claude-agent-sdk-python: it is a process controller, not a loop.","V"]
+];
+
+const LEDGER = [
+ ["mini default.py is 190 lines; loop with finally-save and exit-role break","ok","Confirmed at default.py:96-123. Caveat: uncaught exceptions are re-raised after saving."],
+ ["mini sentinel and truncation","ok","Confirmed (local.py:46-49 needs returncode 0; truncation is a Jinja template at mini.yaml:112-127)."],
+ ["mini has no permission layer","fix","Only DefaultAgent. The mini CLI runs InteractiveAgent in confirm mode with a regex whitelist."],
+ ["mini uses tool-calling by default","ok","Confirmed (litellm_model.py:66-70). The README's 'does not need tool calling' describes the legacy text mode."],
+ ["SWE-agent loop and sentinel submission","ok","Confirmed (agents.py:1284; tools/submit/bin/submit)."],
+ ["SWE-agent submission is 'by convention'","fix","It is a dedicated submit tool plus a sentinel, and the patch is read from /root/model.patch."],
+ ["run_single.py:152 inverted check is a bug","soft","Real inverted condition, but inert: self.actions is never read. Described as latent."],
+ ["SWE-agent never had a summarizer","soft","References in reviewer.py are commented out; say 'unused', not 'never existed'."],
+ ["pi nested loops; no turn cap","ok","Confirmed (agent-loop.ts:188,192; grep found no maxTurns). Absence by grep."],
+ ["pi has no permission system","soft","True as a built-in; but a tool_call hook can veto, and a permission-gate example ships."],
+ ["pi bundles sub-agents","fix","README.md:19 says it skips sub-agents; the subagent is an example extension."],
+ ["pi MCP exposure","soft","Built-in extension, but default exposure is codemode (mcp/config.ts:150); not plain tools."],
+ ["pi persistence is lazy","soft","First write is deferred until a conversation exists; then 'wx' create and append."],
+ ["Hermes loop is in run_agent.py","fix","Loop is in agent/conversation_loop.py:1752. run_agent.py is a 1576-line facade."],
+ ["Hermes max_iterations default is 500","fix","Code: sys.maxsize / None (run_agent.py:241, config_defaults.py:63-66). 500 is stale docs; other values: 90 (setup), 60 (docstring), 250 (delegation config) vs 50 (docstring)."],
+ ["Hermes memory is a frozen snapshot; review fork keeps tools[] identical","ok","Confirmed (memory_tool_store.py:655-658; background_review.py:940-941)."],
+ ["Hermes has no client-side <tool_call> parser","fix","True for chat_completions transport. The ACP bridge parses <tool_call> client-side (acp_openai_bridge.py:20,142)."],
+ ["verifiers launch contract and run_chat_loop","ok","Confirmed (harness.py:313-333; core.py:383-407). Compaction there is reactive plus threshold."],
+ ["Claude SDK spawns the CLI; 6 modes; 10 hook events","ok","Confirmed (subprocess_cli.py:523; types.py:25-27, 286-297)."],
+ ["All harnesses save after every step","soft","mini and SWE-agent do; pi defers its first write."],
+ ["Only pi and Hermes can resume","fix","Verifiers supports resumed segments; Claude Code resumes sessions."],
+ ["Extensibility has converged","soft","Hooks and skills recur in three product runtimes; not subagents or MCP-as-tools everywhere."],
+ ["Two kinds of harness","soft","Spectrum, not binary."],
+ ["Permission-as-task-policy in verifiers","soft","Gate is verified; the framing is inference."]
+];
+
+const LIMITS = [
+ "Claude Code's agent loop, compaction algorithm, tool implementations and auto-mode classifier are closed source. Everything about them is documented behavior or SDK wire protocol.",
+ "Prime Agent (the Rust product) was not cloned. Its behavior here comes from its README. The prime-rl trainer and the Environments Hub server were not read.",
+ "Legacy verifiers behavior was read from the PyPI wheel 0.1.11, not the pinned commit, because the pinned clone dropped those classes.",
+ "pi: packages/chord, apps/*, the TUI and run modes were not read. Hermes: the smart-approval guardian, skill_view loading, gateway sessions and individual provider plugins were not read.",
+ "SWE-agent: SWE-ReX package internals were not read. mini-swe-agent: swerex, bubblewrap, singularity and contree environments were not read.",
+ "Nothing was executed. Findings about runtime behavior are from reading code, not from running it.",
+ "Not examined in depth: error and retry handling across harnesses, streaming and interrupts, evaluation/reward plumbing outside verifiers, multi-agent isolation beyond Hermes, and model provider abstractions for Claude Code.",
+ "Concept sources: OpenAI's 'Harness engineering' post returned 403, and both academic surveys on harnesses were seen only as search snippets.",
+ "Some tool outputs flagged by the environment's injection filter were research reports that merely mention the `bypassPermissions` mode. They were treated as data."
+];
+
+const SOURCES = [
+ ["Concept","https://www.langchain.com/blog/the-anatomy-of-an-agent-harness"],
+ ["Concept","https://anthropic.com/engineering/effective-harnesses-for-long-running-agents"],
+ ["Concept","https://www.anthropic.com/engineering/harness-design-long-running-apps"],
+ ["Concept","https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"],
+ ["Concept","https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents"],
+ ["Concept","https://www.anthropic.com/engineering/building-effective-agents"],
+ ["Concept","https://mitchellh.com/writing/my-ai-adoption-journey"],
+ ["Concept","https://addyosmani.com/blog/agent-harness-engineering/"],
+ ["Concept","https://github.com/EleutherAI/lm-evaluation-harness"],
+ ["Concept","https://inspect.aisi.org.uk/"],
+ ["Concept","https://github.com/SWE-bench/SWE-bench"],
+ ["Claude Code","https://code.claude.com/docs/en/how-claude-code-works"],
+ ["Claude Code","https://github.com/anthropics/claude-agent-sdk-python"],
+ ["Claude Code","https://github.com/anthropics/claude-code"],
+ ["pi","https://github.com/badlogic/pi-mono"],
+ ["Hermes","https://github.com/NousResearch/hermes-agent"],
+ ["SWE-agent","https://github.com/SWE-agent/SWE-agent"],
+ ["mini-swe-agent","https://github.com/SWE-agent/mini-swe-agent"],
+ ["Prime","https://github.com/PrimeIntellect-ai/verifiers"],
+ ["Prime","https://github.com/PrimeIntellect-ai/prime-cli"],
+ ["Prime","https://github.com/PrimeIntellect-ai/prime-environments"],
+ ["Prime","https://github.com/PrimeIntellect-ai/prime-agent"]
+];
+
+/* ---------- RENDER ---------- */
+const $ = (s,r=document)=>r.querySelector(s);
+const el = (tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const k in attrs){if(k==="class")e.className=attrs[k];else if(k.startsWith("on"))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k]);}kids.flat().forEach(c=>e.append(c&&c.nodeType?c:document.createTextNode(c==null?"":c)));return e;};
+const LBL = {V:"VERIFIED",D:"DOCUMENTED",I:"INFERRED"};
+const badge = l=>el("span",{class:"badge b-"+l},LBL[l]);
+
+/* theme */
+try{const t=localStorage.getItem("hfn-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}
+$("#theme").addEventListener("click",()=>{
+  const cur=document.documentElement.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+  const nx=cur==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",nx);
+  try{localStorage.setItem("hfn-theme",nx);}catch(e){}
+});
+
+/* sha table */
+SHAS.forEach(([n,s])=>$("#shatable").append(el("tr",{},el("td",{},n),el("td",{class:"sha"},s))));
+
+/* layers */
+let curLayer=1;
+function drawLayers(){
+  const st=$("#stack");st.textContent="";
+  LAYERS.forEach((L,i)=>{
+    const b=el("button",{type:"button",class:i===0?"model":(i===curLayer?"on":""),"aria-pressed":String(i===curLayer)},L.k,el("span",{class:"tag"},L.tag));
+    if(i>0)b.addEventListener("click",()=>{curLayer=i;drawLayers();});
+    st.append(b);
+  });
+  const L=LAYERS[curLayer],p=$("#layerpanel");p.textContent="";
+  p.append(el("h4",{},L.k),el("p",{},L.d));
+  const t=el("table");L.rows.forEach(r=>t.append(el("tr",{},el("td",{},r[0]),el("td",{},r[1]))));
+  p.append(t);
+}
+drawLayers();
+
+/* chapters */
+let curH="pi",curStep=0,onlyV=false;
+function drawPick(){
+  const p=$("#pick");p.textContent="";
+  H.forEach(h=>p.append(el("button",{type:"button",class:h.id===curH?"on":"","aria-pressed":String(h.id===curH),onclick:()=>{curH=h.id;curStep=0;drawPick();drawChap();}},h.name)));
+}
+function drawChap(){
+  const h=H.find(x=>x.id===curH),c=$("#chap");c.textContent="";
+  c.append(el("div",{class:"chap-h"},el("div",{class:"repo"},h.repo),el("h3",{},h.name),el("div",{class:"mono",style:"font-size:12px;color:var(--accent);margin:2px 0 6px"},h.kind),el("p",{style:"margin:6px 0 0;max-width:70ch"},h.tag)));
+  const steps=h.flow.filter(s=>!onlyV||s.l==="V");
+  if(curStep>=steps.length)curStep=0;
+  const fl=el("div",{class:"flow",role:"tablist"});
+  steps.forEach((s,i)=>{
+    if(i)fl.append(el("div",{class:"arrow","aria-hidden":"true"},"→"));
+    fl.append(el("button",{type:"button",class:"step"+(i===curStep?" on":""),role:"tab","aria-selected":String(i===curStep),onclick:()=>{curStep=i;drawChap();}},el("b",{},"STEP "+(i+1)),s.t));
+  });
+  c.append(fl);
+  const s=steps[curStep];
+  if(s){
+    c.append(el("div",{class:"detail"},
+      el("div",{class:"txt"},el("div",{},badge(s.l)),el("p",{},s.n),el("div",{class:"cite"},s.c)),
+      el("pre",{class:"code"},s.code)));
+  }
+  const f=el("div",{class:"facts"});
+  DIMS.forEach(([k,lab])=>{const v=h.facts[k];if(!v||(onlyV&&v[1]!=="V"))return;f.append(el("div",{class:"fact"},el("div",{class:"lab"},lab),el("div",{},badge(v[1])," ",v[0])));});
+  c.append(f);
+  const su=el("div",{class:"surp"},el("h5",{},"Surprises and caveats"));
+  const ul=el("ul",{style:"margin:0;padding-left:18px"});
+  h.surp.filter(x=>!onlyV||x[1]==="V").forEach(x=>ul.append(el("li",{},badge(x[1])," ",x[0])));
+  su.append(ul);c.append(su);
+}
+$("#onlyV").addEventListener("click",e=>{onlyV=!onlyV;e.currentTarget.setAttribute("aria-pressed",String(onlyV));drawChap();});
+drawPick();drawChap();
+
+/* matrix */
+const shown=new Set(H.map(h=>h.id));let focusDim=null;
+function drawMatrix(){
+  const ctl=$("#colctl");ctl.textContent="";ctl.append(el("span",{class:"lab"},"Columns"));
+  H.forEach(h=>ctl.append(el("button",{type:"button","aria-pressed":String(shown.has(h.id)),onclick:()=>{shown.has(h.id)?(shown.size>1&&shown.delete(h.id)):shown.add(h.id);drawMatrix();}},h.name)));
+  const t=$("#mx");t.textContent="";
+  const hr=el("tr",{},el("th",{},""));
+  H.forEach(h=>hr.append(el("th",{class:shown.has(h.id)?"":"hide"},h.name)));
+  t.append(el("thead",{},hr));
+  const tb=el("tbody");
+  DIMS.forEach(([k,lab])=>{
+    const tr=el("tr",{class:focusDim===k?"focus":""});
+    tr.append(el("th",{style:"cursor:pointer",onclick:()=>{focusDim=focusDim===k?null:k;drawMatrix();}},lab));
+    H.forEach(h=>{const v=h.facts[k];tr.append(el("td",{class:shown.has(h.id)?"":"hide"},badge(v[1])," ",v[0]));});
+    tb.append(tr);
+  });
+  t.append(tb);
+}
+drawMatrix();
+
+/* patterns */
+PATTERNS.forEach(p=>$("#pat").append(el("div",{class:"card"},el("h4",{},p.t),el("div",{},badge(p.l)),el("p",{},p.b),p.was?el("div",{class:"was"},p.was):"")));
+
+/* claude code map */
+(function(){const t=$("#cctab");t.append(el("tr",{},el("th",{},"In Claude Code"),el("th",{},"Read an open implementation"),el("th",{},"Evidence")));
+CCMAP.forEach(r=>t.append(el("tr",{},el("td",{},el("b",{},r[0])),el("td",{},r[1]),el("td",{},badge(r[2])))));})();
+
+/* ledger */
+let ledF="all";
+function drawLedger(){
+  const c=$("#ledctl");c.textContent="";c.append(el("span",{class:"lab"},"Verdict"));
+  [["all","all"],["ok","confirmed"],["soft","softened"],["fix","corrected"]].forEach(([k,l])=>c.append(el("button",{type:"button","aria-pressed":String(ledF===k),onclick:()=>{ledF=k;drawLedger();}},l+(k==="all"?" ("+LEDGER.length+")":" ("+LEDGER.filter(x=>x[1]===k).length+")"))));
+  const t=$("#led");t.textContent="";
+  t.append(el("tr",{},el("th",{},"Claim"),el("th",{},"Verdict"),el("th",{},"What the source showed")));
+  const M={ok:["v-ok","CONFIRMED"],soft:["v-soft","SOFTENED"],fix:["v-fix","CORRECTED"]};
+  LEDGER.filter(r=>ledF==="all"||r[1]===ledF).forEach(r=>t.append(el("tr",{},el("td",{},r[0]),el("td",{},el("span",{class:"verd "+M[r[1]][0]},M[r[1]][1])),el("td",{},r[2]))));
+}
+drawLedger();
+
+/* limits + sources */
+LIMITS.forEach(x=>$("#lim").append(el("li",{},x)));
+SOURCES.forEach(([g,u])=>$("#srclist").append(el("li",{},el("b",{class:"mono",style:"font-size:11px;color:var(--accent)"},g+" · "),el("a",{href:u,rel:"noopener"},u))));
+
+/* nav highlight */
+const links=[...document.querySelectorAll("nav a")];
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+e.target.id));}});},{rootMargin:"-45% 0px -50% 0px"});
+document.querySelectorAll("main section").forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
