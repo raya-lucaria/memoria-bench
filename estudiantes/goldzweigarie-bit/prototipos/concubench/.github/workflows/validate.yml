@@ -1,0 +1,41 @@
+name: validate
+
+on:
+  pull_request:
+    paths: ["tasks/**", "bench/**", "images/**", "tests/**", ".github/workflows/validate.yml"]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "numpy>=2,<3"
+      - run: python -m unittest -v
+
+  validate:
+    needs: unit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: docker build -t concubench-base:latest images/base
+      - run: python -m bench validate --oracle-repeats 3 --run-id ci
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runs
+          path: |
+            runs/ci/results.jsonl
+            runs/ci/run.json

@@ -1,0 +1,50 @@
+# Validación de concubench con Docker real (2026-11-17)
+# Comando: python3 -m bench validate --oracle-repeats 2
+# Host: Linux x86_64, 2 CPU, 8 GB, cgroup v1, Docker 29.9.
+# Imagen local equivalente a images/base (Python 3.13 + numpy 2.5); la de images/base no se ha construido todavía.
+
+validando 1 tareas (4 intentos) → runs/v-m05
+  ✘ m05-backpressure       naive      #1 oom pico=69.1MB/96MB
+  ✘ m05-backpressure       null       #1 oom pico=94.4MB/96MB
+  ✔ m05-backpressure       oracle     #1 ok pico=19.4MB/96MB
+  ✔ m05-backpressure       oracle     #2 ok pico=19.4MB/96MB
+
+makespan 46.5 s · pico reservado 2048 MB de 6018 · 2 fases simultáneas máx.
+
+tarea                   null     naive        oracle      pico oracle / límite
+m05-backpressure       oom      oom          2/2          19.4 / 96 MB
+
+benchmark válido ✔
+
+
+validando 2 tareas (8 intentos) → runs/v-m01-m02
+  ✘ m02-shared-array       naive      #1 oom pico=576.1MB/600MB
+  ✘ m02-shared-array       null       #1 oom pico=553.4MB/600MB
+  ✔ m02-shared-array       oracle     #2 ok pico=70.8MB/600MB
+  ✔ m02-shared-array       oracle     #1 ok pico=88.9MB/600MB
+  ✘ m01-streaming          null       #1 oom pico=89.6MB/96MB
+  ✘ m01-streaming          naive      #1 oom pico=95.0MB/96MB
+  ✔ m01-streaming          oracle     #2 ok pico=18.0MB/96MB
+  ✔ m01-streaming          oracle     #1 ok pico=18.0MB/96MB
+
+makespan 29.53 s · pico reservado 2048 MB de 6018 · 2 fases simultáneas máx.
+
+tarea                   null     naive        oracle      pico oracle / límite
+m01-streaming          oom      oom          2/2          18.0 / 96 MB
+m02-shared-array       oom      oom          2/2          88.9 / 600 MB
+
+benchmark válido ✔
+
+# results.jsonl
+{"run_id": "v-m05", "task": "m05-backpressure", "category": "memoria", "agent": "naive", "attempt": 1, "seed": 996383577, "scale": 1.0, "agent_rc": 127, "agent_timed_out": false, "agent_wall_s": 0.07, "model": "none", "passed": false, "exit_reason": "oom", "grade_wall_s": 0.22, "cpu_s": 0.197, "parallelism": 0.9, "peak_mb": 69.1, "peak_total_mb": 96.0, "limit_mb": 96, "cpus": 2.0, "cpus_clamped": false, "oom_kills": 1, "cgroup": 1, "check": "salida ilegible: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')", "total_wall_s": 46.18}
+{"run_id": "v-m05", "task": "m05-backpressure", "category": "memoria", "agent": "null", "attempt": 1, "seed": 1852336903, "scale": 1.0, "agent_rc": 0, "agent_timed_out": false, "agent_wall_s": 0.0, "model": "none", "passed": false, "exit_reason": "oom", "grade_wall_s": 0.167, "cpu_s": 0.161, "parallelism": 0.97, "peak_mb": 94.4, "peak_total_mb": 96.0, "limit_mb": 96, "cpus": 2.0, "cpus_clamped": false, "oom_kills": 1, "cgroup": 1, "check": "salida ilegible: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')", "total_wall_s": 46.2}
+{"run_id": "v-m05", "task": "m05-backpressure", "category": "memoria", "agent": "oracle", "attempt": 1, "seed": 1571479668, "scale": 1.0, "agent_rc": 0, "agent_timed_out": false, "agent_wall_s": 0.18, "model": "none", "passed": true, "exit_reason": "ok", "grade_wall_s": 14.956, "cpu_s": 20.376, "parallelism": 1.36, "peak_mb": 19.4, "peak_total_mb": 20.6, "limit_mb": 96, "cpus": 2.0, "cpus_clamped": false, "oom_kills": 0, "cgroup": 1, "check": "ok", "total_wall_s": 46.5}
+{"run_id": "v-m05", "task": "m05-backpressure", "category": "memoria", "agent": "oracle", "attempt": 2, "seed": 1872947168, "scale": 1.0, "agent_rc": 0, "agent_timed_out": false, "agent_wall_s": 0.13, "model": "none", "passed": true, "exit_reason": "ok", "grade_wall_s": 15.757, "cpu_s": 21.523, "parallelism": 1.37, "peak_mb": 19.4, "peak_total_mb": 21.0, "limit_mb": 96, "cpus": 2.0, "cpus_clamped": false, "oom_kills": 0, "cgroup": 1, "check": "ok", "total_wall_s": 46.5}
+{"run_id": "v-m01-m02", "task": "m02-shared-array", "category": "memoria", "agent": "naive", "attempt": 1, "seed": 1924950887, "scale": 1.0, "agent_rc": 0, "agent_timed_out": false, "agent_wall_s": 0.07, "model": "none", "passed": false, "exit_reason": "oom", "grade_wall_s": 0.623, "cpu_s": 0.702, "parallelism": 1.13, "peak_mb": 576.1, "peak_total_mb": 600.0, "limit_mb": 600, "cpus": 2.0, "cpus_clamped": true, "oom_kills": 1, "cgroup": 1, "check": "salida inválida: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')", "total_wall_s": 27.54}
+{"run_id": "v-m01-m02", "task": "m02-shared-array", "category": "memoria", "agent": "null", "attempt": 1, "seed": 1062438215, "scale": 1.0, "agent_rc": 0, "agent_timed_out": false, "agent_wall_s": 0.0, "model": "none", "passed": false, "exit_reason": "oom", "grade_wall_s": 0.876, "cpu_s": 1.162, "parallelism": 1.33, "peak_mb": 553.4, "peak_total_mb": 600.0, "limit_mb": 600, "cpus": 2.0, "cpus_clamped": true, "oom_kills": 1, "cgroup": 1, "check": "salida inválida: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')", "total_wall_s": 27.79}
+{"run_id": "v-m01-m02", "task": "m02-shared-array", "category": "memoria", "agent": "oracle", "attempt": 2, "seed": 819653852, "scale": 1.0, "agent_rc": 0, "agent_timed_out": false, "agent_wall_s": 0.08, "model": "none", "passed": true, "exit_reason": "ok", "grade_wall_s": 0.579, "cpu_s": 0.841, "parallelism": 1.45, "peak_mb": 70.8, "peak_total_mb": 106.9, "limit_mb": 600, "cpus": 2.0, "cpus_clamped": true, "oom_kills": 0, "cgroup": 1, "check": "ok", "total_wall_s": 28.21}
+{"run_id": "v-m01-m02", "task": "m02-shared-array", "category": "memoria", "agent": "oracle", "attempt": 1, "seed": 1153020423, "scale": 1.0, "agent_rc": 0, "agent_timed_out": false, "agent_wall_s": 0.08, "model": "none", "passed": true, "exit_reason": "ok", "grade_wall_s": 0.525, "cpu_s": 0.786, "parallelism": 1.5, "peak_mb": 88.9, "peak_total_mb": 111.7, "limit_mb": 600, "cpus": 2.0, "cpus_clamped": true, "oom_kills": 0, "cgroup": 1, "check": "ok", "total_wall_s": 28.43}
+{"run_id": "v-m01-m02", "task": "m01-streaming", "category": "memoria", "agent": "null", "attempt": 1, "seed": 2006873579, "scale": 1.0, "agent_rc": 0, "agent_timed_out": false, "agent_wall_s": 0.0, "model": "none", "passed": false, "exit_reason": "oom", "grade_wall_s": 0.373, "cpu_s": 0.333, "parallelism": 0.89, "peak_mb": 89.6, "peak_total_mb": 96.0, "limit_mb": 96, "cpus": 1.0, "cpus_clamped": false, "oom_kills": 1, "cgroup": 1, "check": "salida ilegible: Expecting value: line 1 column 1 (char 0)", "total_wall_s": 28.89}
+{"run_id": "v-m01-m02", "task": "m01-streaming", "category": "memoria", "agent": "naive", "attempt": 1, "seed": 1462268897, "scale": 1.0, "agent_rc": 0, "agent_timed_out": false, "agent_wall_s": 0.06, "model": "none", "passed": false, "exit_reason": "oom", "grade_wall_s": 0.422, "cpu_s": 0.208, "parallelism": 0.49, "peak_mb": 95.0, "peak_total_mb": 96.0, "limit_mb": 96, "cpus": 1.0, "cpus_clamped": false, "oom_kills": 1, "cgroup": 1, "check": "salida ilegible: Expecting value: line 1 column 1 (char 0)", "total_wall_s": 28.97}
+{"run_id": "v-m01-m02", "task": "m01-streaming", "category": "memoria", "agent": "oracle", "attempt": 2, "seed": 2080555333, "scale": 1.0, "agent_rc": 0, "agent_timed_out": false, "agent_wall_s": 0.07, "model": "none", "passed": true, "exit_reason": "ok", "grade_wall_s": 3.125, "cpu_s": 3.084, "parallelism": 0.99, "peak_mb": 18.0, "peak_total_mb": 58.0, "limit_mb": 96, "cpus": 1.0, "cpus_clamped": false, "oom_kills": 0, "cgroup": 1, "check": "ok: 16 alcaldías", "total_wall_s": 29.35}
+{"run_id": "v-m01-m02", "task": "m01-streaming", "category": "memoria", "agent": "oracle", "attempt": 1, "seed": 1786731510, "scale": 1.0, "agent_rc": 0, "agent_timed_out": false, "agent_wall_s": 0.09, "model": "none", "passed": true, "exit_reason": "ok", "grade_wall_s": 3.231, "cpu_s": 3.158, "parallelism": 0.98, "peak_mb": 18.0, "peak_total_mb": 60.1, "limit_mb": 96, "cpus": 1.0, "cpus_clamped": false, "oom_kills": 0, "cgroup": 1, "check": "ok: 16 alcaldías", "total_wall_s": 29.46}

@@ -1,0 +1,24 @@
+id = "m05-backpressure"
+title = "Productor rápido, consumidores lentos: acotar la cola"
+category = "memoria"
+difficulty = 2
+repeats = 3
+
+[agent]
+timeout_s = 900
+cpus = 2
+memory = "2g"
+
+[prepare]
+memory = "256m"
+timeout_s = 300
+
+[grading]
+timeout_s = 120
+cpus = 2
+memory = "96m"
+
+[expect]
+null = "fail"
+naive = "oom"
+oracle_max_mem_frac = 0.7

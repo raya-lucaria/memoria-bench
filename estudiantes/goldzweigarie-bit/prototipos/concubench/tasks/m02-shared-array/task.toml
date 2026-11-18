@@ -1,0 +1,24 @@
+id = "m02-shared-array"
+title = "4 procesos sobre un arreglo de 400 MB sin copiarlo"
+category = "memoria"
+difficulty = 2
+repeats = 3
+
+[agent]
+timeout_s = 900
+cpus = 2
+memory = "2g"
+
+[prepare]
+memory = "512m"
+timeout_s = 300
+
+[grading]
+timeout_s = 120
+cpus = 4
+memory = "600m"       # el arreglo solo ya pesa 400 MB
+
+[expect]
+null = "fail"
+naive = "oom"
+oracle_max_mem_frac = 0.7
