@@ -1,0 +1,6 @@
+bm25: 1s
+minilm: 140s
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 5 files:  20%|██        | 1/5 [00:00<00:00,  6.39it/s]Fetching 5 files:  80%|████████  | 4/5 [00:00<00:00, 13.25it/s]Fetching 5 files: 100%|██████████| 5/5 [00:01<00:00,  2.51it/s]
+bge-small: 692s
+exit 0

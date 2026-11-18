@@ -1,0 +1,116 @@
+{
+  "retrieval": {
+    "bm25": {
+      "any@5": 93.1,
+      "all@5": 82.8,
+      "any@10": 93.1,
+      "all@10": 89.7,
+      "n": 29
+    },
+    "minilm": {
+      "any@5": 100.0,
+      "all@5": 89.7,
+      "any@10": 100.0,
+      "all@10": 100.0,
+      "n": 29
+    },
+    "bge-small": {
+      "any@5": 96.6,
+      "all@5": 89.7,
+      "any@10": 96.6,
+      "all@10": 93.1,
+      "n": 29
+    }
+  },
+  "qa": {
+    "claude_code__haiku__oracle": {
+      "n": 30,
+      "acc": 90.0,
+      "ci95": 10.7,
+      "by_type": {
+        "abstention": "1/1",
+        "knowledge-update": "5/5",
+        "multi-session": "4/5",
+        "single-session-assistant": "5/5",
+        "single-session-preference": "4/5",
+        "single-session-user": "4/5",
+        "temporal-reasoning": "4/4"
+      }
+    },
+    "claude_code__haiku__retrieved": {
+      "n": 30,
+      "acc": 70.0,
+      "ci95": 16.4,
+      "by_type": {
+        "abstention": "1/1",
+        "knowledge-update": "3/5",
+        "multi-session": "1/5",
+        "single-session-assistant": "5/5",
+        "single-session-preference": "2/5",
+        "single-session-user": "5/5",
+        "temporal-reasoning": "4/4"
+      }
+    },
+    "claude_code__sonnet__oracle": {
+      "n": 30,
+      "acc": 90.0,
+      "ci95": 10.7,
+      "by_type": {
+        "abstention": "1/1",
+        "knowledge-update": "5/5",
+        "multi-session": "3/5",
+        "single-session-assistant": "5/5",
+        "single-session-preference": "4/5",
+        "single-session-user": "5/5",
+        "temporal-reasoning": "4/4"
+      }
+    },
+    "claude_code__sonnet__retrieved": {
+      "n": 30,
+      "acc": 86.7,
+      "ci95": 12.2,
+      "by_type": {
+        "abstention": "1/1",
+        "knowledge-update": "4/5",
+        "multi-session": "3/5",
+        "single-session-assistant": "5/5",
+        "single-session-preference": "4/5",
+        "single-session-user": "5/5",
+        "temporal-reasoning": "4/4"
+      }
+    },
+    "opencode__deepseek-v4.1-flash-free__oracle": {
+      "n": 30,
+      "acc": 86.7,
+      "ci95": 12.2,
+      "by_type": {
+        "abstention": "1/1",
+        "knowledge-update": "5/5",
+        "multi-session": "4/5",
+        "single-session-assistant": "5/5",
+        "single-session-preference": "3/5",
+        "single-session-user": "4/5",
+        "temporal-reasoning": "4/4"
+      }
+    },
+    "opencode__deepseek-v4.1-flash-free__retrieved": {
+      "n": 2,
+      "acc": 100.0,
+      "ci95": 0.0,
+      "by_type": {
+        "single-session-assistant": "1/1",
+        "single-session-user": "1/1"
+      }
+    },
+    "opencode__mimo-v2.6-flash-free__oracle": {
+      "n": 11,
+      "acc": 100.0,
+      "ci95": 0.0,
+      "by_type": {
+        "single-session-assistant": "5/5",
+        "single-session-preference": "1/1",
+        "single-session-user": "5/5"
+      }
+    }
+  }
+}
