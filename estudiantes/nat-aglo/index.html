@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LLM Agent Harnesses — Understanding Pi, Hermes, SWE-bench &amp; PrimeAgent</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-badge">HARNESS LAB</span>
+        <h1>LLM Agent Harnesses</h1>
+      </div>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#what-is-a-harness">What is a Harness?</a>
+        <a href="#harnesses">The 4 Harnesses</a>
+        <a href="#comparison">Comparison</a>
+        <a href="#memory-types">Memory Systems</a>
+        <a href="#code-memory-benchmarks">Code &amp; Memory Benchmarks</a>
+        <a href="#test-plan-agnostic">Test Plan (Sin API Key)</a>
+        <a href="#architecture">How They Connect</a>
+      </nav>
+      <div class="header-actions">
+        <span class="status-pill status-connected" title="Static standalone access">
+          <span class="dot"></span>
+          <span>Zero-Dependency (file://)</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Agent Infrastructure &amp; Real-World Autonomy</p>
+          <h2>The model predicts tokens.<br />The harness gets things done.</h2>
+          <p class="lead">
+            An LLM alone is just a brain in a jar: it can think and write, but it cannot run commands, read files, remember past sessions, or verify its own fixes. A <strong>harness</strong> is the body and nervous system surrounding that brain—providing the hands (tools), the sandbox (safe environment), the memory, and the feedback loops needed to solve real engineering problems.
+          </p>
+          <div class="hero-cta">
+            <a href="#harnesses" class="btn btn-primary">Explore the 4 Harnesses</a>
+            <a href="#memory-types" class="btn btn-secondary">Memory Architectures</a>
+            <a href="#code-memory-benchmarks" class="btn btn-secondary">Code &amp; Memory Benchmarks</a>
+          </div>
+        </div>
+        <div class="hero-diagram" aria-label="Agent Harness Loop Diagram">
+          <div class="loop-card">
+            <div class="loop-title">The Continuous Execution Loop</div>
+            <div class="loop-steps">
+              <div class="loop-step active" data-step="prompt">
+                <span class="step-num">1</span>
+                <div>
+                  <strong>Context &amp; Memory Hygiene</strong>
+                  <small>Keeps essential instructions clean and compact</small>
+                </div>
+              </div>
+              <div class="loop-arrow">↓</div>
+              <div class="loop-step" data-step="model">
+                <span class="step-num">2</span>
+                <div>
+                  <strong>Model Reasoning Step</strong>
+                  <small>Decides whether to write, edit, run a tool, or answer</small>
+                </div>
+              </div>
+              <div class="loop-arrow">↓</div>
+              <div class="loop-step" data-step="tools">
+                <span class="step-num">3</span>
+                <div>
+                  <strong>Sandboxed Execution</strong>
+                  <small>Runs bash scripts, edits files, calls MCP servers or Docker</small>
+                </div>
+              </div>
+              <div class="loop-arrow">↓</div>
+              <div class="loop-step" data-step="verify">
+                <span class="step-num">4</span>
+                <div>
+                  <strong>Observation &amp; Verification</strong>
+                  <small>Reads output logs, catches errors, and self-corrects</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 1: What is a Harness? -->
+    <section id="what-is-a-harness" class="section">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">01 / Foundations</p>
+            <h3>What Exactly Is an LLM Harness?</h3>
+          </div>
+        </div>
+
+        <div class="editorial-box">
+          <p class="section-intro">
+            Think of an LLM as a brilliant consultant sitting in an empty room with no computer, no clock, and no notepad. Every few seconds, you hand them a paper question, and they write back an answer. Once the note is passed, they forget who you are.
+          </p>
+          <p>
+            A <strong>harness</strong> gives that consultant a desk, a terminal, access to your code repository, persistent notebooks, and an automated assistant to run their tests. It transforms a one-shot chatbot into an autonomous engineer.
+          </p>
+        </div>
+
+        <div class="pillars-grid">
+          <article class="pillar-card">
+            <div class="pillar-icon">🎯</div>
+            <h4>Context &amp; Attention Control</h4>
+            <p>
+              LLMs get overwhelmed when prompt history gets too long. A good harness compresses old turns, keeps system instructions concise, and ensures critical guidelines never fall out of attention.
+            </p>
+          </article>
+          <article class="pillar-card">
+            <div class="pillar-icon">🛠️</div>
+            <h4>Tools &amp; Interfaces</h4>
+            <p>
+              Bridges thoughts to action. Whether through raw terminal commands, precise file search-and-replace, or protocols like MCP (Model Context Protocol), the harness converts JSON tool calls into real effects.
+            </p>
+          </article>
+          <article class="pillar-card">
+            <div class="pillar-icon">🛡️</div>
+            <h4>Safe Execution Sandbox</h4>
+            <p>
+              Agents run experimental code. A harness isolates that execution inside Docker containers, sub-shells, or virtual environments so your host machine stays completely safe from destructive commands.
+            </p>
+          </article>
+          <article class="pillar-card">
+            <div class="pillar-icon">🔄</div>
+            <h4>Self-Correction Loops</h4>
+            <p>
+              When a command fails or a test turns red, the harness feeds the exact error back to the model, giving it the autonomy to diagnose, rewrite, and verify its work until it succeeds.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: The 4 Harnesses -->
+    <section id="harnesses" class="section section-alt">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">02 / Deep Dive</p>
+            <h3>How the 4 Harnesses Work</h3>
+          </div>
+          <div class="tab-bar" role="tablist" aria-label="Harness selector">
+            <button class="tab-btn active" role="tab" aria-selected="true" data-tab="pi">Pi</button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-tab="hermes">Hermes</button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-tab="swe">SWE-bench</button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-tab="prime">PrimeAgent</button>
+          </div>
+        </div>
+
+        <!-- Pi Panel -->
+        <article id="tab-pi" class="harness-panel active" role="tabpanel">
+          <div class="panel-top">
+            <div>
+              <span class="tag tag-pi">Minimalist Daily Coding Agent</span>
+              <h4>Pi (<code>pi-mono</code> / <code>pi-coding-agent</code>)</h4>
+              <p class="creator">Created by Mario Zechner · Written in TypeScript / Node.js</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="human-readable-card">
+              <h5>The Philosophy in Plain English</h5>
+              <p>
+                Most modern AI coding assistants have become heavy, bloated software suites filled with popups, hidden background prompts, and complex plan modes that eat up your token quota. <strong>Pi</strong> strips all of that away. Its philosophy is simple: modern frontier LLMs already know how to write code—give them four fast, rock-solid tools, keep the system prompt under 1,000 tokens, and stay out of the developer's way.
+              </p>
+            </div>
+            <div class="detail-grid">
+              <div class="detail-box">
+                <h5>Key Characteristics</h5>
+                <ul>
+                  <li><strong>Only 4 Fundamental Tools:</strong> The core harness ships with just <code>read</code>, <code>write</code>, <code>edit</code>, and <code>bash</code>. That's everything an engineer needs.</li>
+                  <li><strong>Sub-1,000 Token Prompt:</strong> Protects your context window and ensures the model dedicates its token budget to your code rather than long preamble instructions.</li>
+                  <li><strong>Navigable Tree Sessions:</strong> Conversations are saved as branching trees, making it easy to rewind, branch, or test different solutions.</li>
+                  <li><strong>Extensible Without Bloat:</strong> If you want MCP support, custom themes, or new workflows, you add small, typed TypeScript extensions that hot-reload immediately.</li>
+                </ul>
+              </div>
+              <div class="detail-box">
+                <h5>Architecture Flow</h5>
+                <pre class="arch-flow">Developer in Terminal
+  └─&gt; Compact Prompt (&lt; 1,000 tokens)
+        └─&gt; Unified LLM Layer (pi-ai)
+              └─&gt; 4 Clean Tools: read | write | edit | bash
+                    └─&gt; Git Repo / Branching Session Tree</pre>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Hermes Panel -->
+        <article id="tab-hermes" class="harness-panel" role="tabpanel" hidden>
+          <div class="panel-top">
+            <div>
+              <span class="tag tag-hermes">General-Purpose Autonomous Agent &amp; Gateway</span>
+              <h4>Hermes (<code>NousResearch/hermes-agent</code>)</h4>
+              <p class="creator">Created by Nous Research · Python, SQLite &amp; s6-overlay Docker</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="human-readable-card">
+              <h5>The Philosophy in Plain English</h5>
+              <p>
+                <strong>Hermes</strong> is built for autonomous execution across environments. It is not just a chat CLI: it is a full background service (gateway) that can connect to chat platforms (Discord, Telegram, Slack), execute browser automation via headless Chromium, coordinate subagents, and expose standard OpenAI-compatible endpoints so other apps can command it. Paired with <strong>Hermes Bench</strong>, it judges AI success by verifying the actual files and state left on disk rather than pleasant conversational replies.
+              </p>
+            </div>
+            <div class="detail-grid">
+              <div class="detail-box">
+                <h5>Key Characteristics</h5>
+                <ul>
+                  <li><strong>Supervised Docker Daemon:</strong> Runs under <code>s6-overlay</code> with automatic process supervision, background cron scheduling, and persistent volume storage.</li>
+                  <li><strong>Built-in Toolsets &amp; Skills:</strong> Ships with 40+ bundled skills (code inspection, browser automation, systematic debugging, data analysis) and native MCP support.</li>
+                  <li><strong>OpenAI-Compatible API Gateway:</strong> Exposes <code>/v1/chat/completions</code> on port 8642, enabling local and remote apps to invoke it directly.</li>
+                  <li><strong>State-Based Verification:</strong> Hermes Bench grades whether problems were solved by inspecting real workspace artifacts and exit codes.</li>
+                </ul>
+              </div>
+              <div class="detail-box">
+                <h5>Architecture Flow</h5>
+                <pre class="arch-flow">Gateway Clients (Web / CLI / Bots)
+  └─&gt; Hermes Agent Core + Skills System
+        └─&gt; Tool Manager (Browser, Bash, MCP, Files)
+              └─&gt; Sandboxed Execution Environment
+                    └─&gt; Hermes Bench / Filesystem State Audit</pre>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- SWE-bench Panel -->
+        <article id="tab-swe" class="harness-panel" role="tabpanel" hidden>
+          <div class="panel-top">
+            <div>
+              <span class="tag tag-swe">Automated Software Benchmarking Harness</span>
+              <h4>SWE-bench Harness (<code>swebench.harness</code>)</h4>
+              <p class="creator">Created by Princeton NLP · Python &amp; Multi-Container Docker</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="human-readable-card">
+              <h5>The Philosophy in Plain English</h5>
+              <p>
+                Unlike Pi or Hermes, <strong>SWE-bench is not an interactive assistant</strong> you talk to. It is the gold-standard grading harness used across AI research to test whether an LLM can resolve real-world software bugs. It takes a problem description from a historical GitHub issue, feeds it to the model, and then rigorously grades the resulting code patch against hidden unit tests inside a replica Docker environment.
+              </p>
+            </div>
+            <div class="detail-grid">
+              <div class="detail-box">
+                <h5>Key Characteristics</h5>
+                <ul>
+                  <li><strong>Deterministic Replicas:</strong> Pre-built Docker images recreate the exact historical commit, Conda environment, and dependencies for hundreds of real open-source Python repos.</li>
+                  <li><strong>Dual-Patch Grading:</strong> Applies the model's git diff (<code>model_patch</code>) and then injects the human maintainer's hidden test patch (<code>test_patch</code>).</li>
+                  <li><strong>Binary Ground-Truth:</strong> An instance passes only if all <code>FAIL_TO_PASS</code> tests succeed (the bug was fixed) and all <code>PASS_TO_PASS</code> tests pass (no regressions were introduced).</li>
+                  <li><strong>Concurrency &amp; Caching:</strong> Runs dozens of benchmark instances concurrently across isolated worker containers.</li>
+                </ul>
+              </div>
+              <div class="detail-box">
+                <h5>Architecture Flow</h5>
+                <pre class="arch-flow">Model's Proposed Git Patch
+  └─&gt; SWE-bench Harness Loader
+        └─&gt; Exact Historical Docker Container
+              ├─&gt; Apply Code Patch + Hidden Test Patch
+              └─&gt; Run pytest / unittest
+                    └─&gt; Pass/Fail Verdict (No Regressions)</pre>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- PrimeAgent Panel -->
+        <article id="tab-prime" class="harness-panel" role="tabpanel" hidden>
+          <div class="panel-top">
+            <div>
+              <span class="tag tag-prime">Recursive Reasoning &amp; Compute Scaling</span>
+              <h4>PrimeAgent (<code>prime-agent</code>)</h4>
+              <p class="creator">Created by Prime Intellect · Built on Pi TUI + Stateful IPython REPL</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="human-readable-card">
+              <h5>The Philosophy in Plain English</h5>
+              <p>
+                When humans tackle difficult math, science, or algorithmic problems, we don't just write out the final answer in one go—we write draft code, inspect intermediate values, run simulations, and refine our approach. <strong>PrimeAgent</strong> is an open-source Recursive Language Model (RLM) harness that gives models this exact capability by connecting them to a persistent, stateful Python REPL and daemon subagents.
+              </p>
+            </div>
+            <div class="detail-grid">
+              <div class="detail-box">
+                <h5>Key Characteristics</h5>
+                <ul>
+                  <li><strong>Persistent IPython REPL:</strong> Unlike stateless one-shot terminal calls, variables, functions, and datasets remain active in memory from one step to the next.</li>
+                  <li><strong>Test-Time Compute Scaling:</strong> Models can run hundreds of algorithmic hypothesis checks before delivering the final answer, dramatically increasing problem-solving capability.</li>
+                  <li><strong>Continual Memory:</strong> Tracks historical errors and curates reusable skills across complex, multi-stage workflows.</li>
+                  <li><strong>Subagent Delegation:</strong> Spawns parallel background workers to explore alternative algorithmic branches simultaneously.</li>
+                </ul>
+              </div>
+              <div class="detail-box">
+                <h5>Architecture Flow</h5>
+                <pre class="arch-flow">Complex Algorithmic Goal
+  └─&gt; Recursive Language Model (RLM) Loop
+        ├─&gt; Stateful IPython REPL (Variables &amp; State Persist)
+        ├─&gt; Continual Skill &amp; Error Memory
+        └─&gt; Parallel Daemon Subagents
+              └─&gt; Verified Breakthrough Output</pre>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Section 3: Comparison Matrix -->
+    <section id="comparison" class="section">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">03 / Side-by-Side</p>
+            <h3>Comparison Matrix</h3>
+          </div>
+          <div class="filter-wrap">
+            <input
+              type="search"
+              id="matrix-filter"
+              placeholder="Filter table (e.g. Docker, REPL, Minimalist)..."
+              aria-label="Filter comparison matrix"
+            />
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table id="comparison-table">
+            <thead>
+              <tr>
+                <th>Aspect</th>
+                <th>Pi</th>
+                <th>Hermes</th>
+                <th>SWE-bench</th>
+                <th>PrimeAgent</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Primary Purpose</strong></td>
+                <td>Fast, distraction-free daily coding in the terminal.</td>
+                <td>General-purpose autonomous agent, gateway &amp; evaluation suite.</td>
+                <td>Automated, ground-truth software bug fix grading.</td>
+                <td>Recursive hypothesis testing and test-time compute scaling.</td>
+              </tr>
+              <tr>
+                <td><strong>Target User</strong></td>
+                <td>Developers who want full control and zero bloat.</td>
+                <td>Engineers needing multi-platform bots, MCP tools, and autonomous tasks.</td>
+                <td>AI researchers benchmarking model coding performance.</td>
+                <td>Researchers solving high-complexity math, code, or ARC-AGI challenges.</td>
+              </tr>
+              <tr>
+                <td><strong>Environment</strong></td>
+                <td>Lightweight local developer terminal (CLI/TUI).</td>
+                <td>Local terminal or containerized daemon with <code>s6-overlay</code>.</td>
+                <td>Strictly isolated per-benchmark Docker containers.</td>
+                <td>Pi-based TUI connected to a persistent IPython kernel.</td>
+              </tr>
+              <tr>
+                <td><strong>Tool Set</strong></td>
+                <td>Minimalist: 4 primitives (<code>read</code>, <code>write</code>, <code>edit</code>, <code>bash</code>).</td>
+                <td>Rich: 40+ bundled skills, browser, bash, and MCP tools.</td>
+                <td>External test harness; applies patches and runs repo test suites.</td>
+                <td>Stateful Python REPL, subagent orchestrator, and terminal tools.</td>
+              </tr>
+              <tr>
+                <td><strong>Verification Style</strong></td>
+                <td>Interactive: The developer reviews diffs and test results.</td>
+                <td>State-based: Hermes Bench audits files and output states.</td>
+                <td>Unit-test driven: Strictly checks <code>FAIL_TO_PASS</code> and <code>PASS_TO_PASS</code>.</td>
+                <td>Programmatic search: Iterative hypothesis testing and verification.</td>
+              </tr>
+              <tr>
+                <td><strong>Best Fit</strong></td>
+                <td>When you want your AI assistant to be fast, cheap, and simple.</td>
+                <td>When you need an agent with memory, web access, and messaging APIs.</td>
+                <td>When evaluating whether an AI model can genuinely fix GitHub issues.</td>
+                <td>When problems require deep algorithmic exploration and persistent state.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Separate Memory Architectures -->
+    <section id="memory-types" class="section">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">04 / Architectures</p>
+            <h3>Tipos de Memoria en Agentes: Secciones Especializadas</h3>
+          </div>
+          <p class="section-subtitle">
+            Cada arquitectura aborda la memoria persistente bajo un prisma y compromiso distinto. A continuación se desglosan en secciones independientes los 4 modelos principales de memoria para agentes de código.
+          </p>
+        </div>
+
+        <!-- Section 4A: Minimalist & Curated Files -->
+        <div class="memory-specialty-section" id="memory-minimalist">
+          <div class="specialty-header">
+            <div class="specialty-badge-group">
+              <span class="badge badge-purple">Tipo 1: Curated File &amp; Lexical</span>
+              <span class="tech-tag">Hermes Agent · OptMem · AGENTS.md</span>
+            </div>
+            <h4>1. Memoria Basada en Archivos Curados y Búsqueda Léxica</h4>
+          </div>
+          <div class="specialty-grid">
+            <div class="specialty-body">
+              <p>
+                <strong>Filosofía:</strong> Cero llamadas a APIs de LLM al guardar, máxima estabilidad en la caché de prompts (<em>prompt caching</em>) y control absoluto por parte del desarrollador. En lugar de procesar los mensajes con un modelo para resumirlos, se guarda directamente en archivos planos o registros append-only.
+              </p>
+              <div class="feature-bullets">
+                <div class="bullet-item">
+                  <div class="bullet-icon">📄</div>
+                  <div>
+                    <strong>Archivos Estructurados Nativos (Hermes):</strong>
+                    <p>Inyección controlada de <code>MEMORY.md</code> (hechos y preferencias) y <code>USER.md</code> con un presupuesto estricto de caracteres (~1000 tokens) para que el prompt base permanezca siempre en la caché del proveedor.</p>
+                  </div>
+                </div>
+                <div class="bullet-item">
+                  <div class="bullet-icon">⚡</div>
+                  <div>
+                    <strong>OptMem (Plugin Append-Only &amp; BM25):</strong>
+                    <p>Implementación minimalista (<code>rarf/optmem-hermes-plugin</code>). Registra eventos secuenciales y los recupera con regex y BM25 sin depender de bases de datos vectoriales pesadas ni embeddings externos.</p>
+                  </div>
+                </div>
+                <div class="bullet-item">
+                  <div class="bullet-icon">🔍</div>
+                  <div>
+                    <strong>Auditoría Transparente:</strong>
+                    <p>Cualquier desarrollador puede abrir el archivo de memoria con <code>cat</code> o VS Code y editar o borrar lo que el agente "cree saber".</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="specialty-sidebar">
+              <div class="spec-card">
+                <h5>Ficha Técnica</h5>
+                <div class="spec-line"><span>Sobrecarga en Escritura:</span> <strong>0 tokens (I/O directo)</strong></div>
+                <div class="spec-line"><span>Costo en Boot / Prompt:</span> <strong>~400 - 1,000 tokens fijos</strong></div>
+                <div class="spec-line"><span>Algoritmo de Búsqueda:</span> <strong>BM25 / Regex exacto</strong></div>
+                <div class="spec-line"><span>Dependencias:</span> <strong>Cero (Python puro / SQLite)</strong></div>
+                <div class="spec-line"><span>Ideal Para:</span> <strong>Desarrollo local rápido, CLI</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4B: Spatial Second Brain (MemPalace) -->
+        <div class="memory-specialty-section" id="memory-spatial">
+          <div class="specialty-header">
+            <div class="specialty-badge-group">
+              <span class="badge badge-blue">Tipo 2: Spatial "Second Brain"</span>
+              <span class="tech-tag">MemPalace · Method of Loci · MCP</span>
+            </div>
+            <h4>2. Memoria Espacial "Second Brain" (MemPalace)</h4>
+          </div>
+          <div class="specialty-grid">
+            <div class="specialty-body">
+              <p>
+                <strong>Filosofía:</strong> Almacenamiento 100% literal (<em>verbatim</em>). El resumen tradicional destruye información crítica: los "porqués" de una decisión técnica, los trade-offs descartados y el contexto de errores en el código. MemPalace estructura la memoria en una jerarquía espacial basada en el palacio de la memoria mnemotécnico.
+              </p>
+              
+              <!-- Diagrama Espacial -->
+              <div class="spatial-diagram">
+                <div class="spatial-box wing-box">
+                  <div class="spatial-tag">WING (Dominio o Proyecto)</div>
+                  <div class="spatial-title">Repositorio / Proyecto (ej. <code>auth-microservice</code>)</div>
+                  <div class="spatial-children">
+                    <div class="spatial-box hall-box">
+                      <div class="spatial-tag">HALL (Área temática)</div>
+                      <div class="spatial-title">Criptografía &amp; Tokens</div>
+                      <div class="spatial-children">
+                        <div class="spatial-box drawer-box">
+                          <div class="spatial-tag">DRAWER (Decisiones Literales)</div>
+                          <p>"Migrado de RSA a Ed25519 el 12/08: los headers JWT superaban el límite de 8KB en el proxy Ingress."</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="spatial-box hall-box">
+                      <div class="spatial-tag">HALL (Área temática)</div>
+                      <div class="spatial-title">Persistencia &amp; Pools</div>
+                      <div class="spatial-children">
+                        <div class="spatial-box drawer-box">
+                          <div class="spatial-tag">DRAWER (Decisiones Literales)</div>
+                          <p>"No usar transacciones anidadas en <code>billing_worker</code> por deadlocks en PostgreSQL."</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="deepdive-callout">
+                <strong>Rendimiento en Benchmarks y Debate:</strong> Alcanzó <strong>96.6% Recall@5 en LongMemEval</strong> sin invocar LLMs al guardar. Si bien las afirmaciones de 100% de recall con reranking causaron debate por sobre-ajuste a ciertos conjuntos de prueba, los análisis independientes validan que el filtrado espacial con embeddings locales supera con creces a la extracción por resúmenes.
+              </div>
+            </div>
+
+            <div class="specialty-sidebar">
+              <div class="spec-card">
+                <h5>Ficha Técnica</h5>
+                <div class="spec-line"><span>Sobrecarga en Escritura:</span> <strong>0 llamadas LLM (embeddings locales)</strong></div>
+                <div class="spec-line"><span>Costo en Boot / Prompt:</span> <strong>~170 tokens base (punteros)</strong></div>
+                <div class="spec-line"><span>Estructura:</span> <strong>Wings &rarr; Halls &rarr; Drawers</strong></div>
+                <div class="spec-line"><span>Motor Vectorial:</span> <strong>ChromaDB local</strong></div>
+                <div class="spec-line"><span>Integración:</span> <strong>MCP (Model Context Protocol)</strong></div>
+                <div class="spec-line"><span>Ideal Para:</span> <strong>Second Brain personal, contexto multi-sesión</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4C: Working Memory & Cross-File Structural Memory -->
+        <div class="memory-specialty-section" id="memory-structural">
+          <div class="specialty-header">
+            <div class="specialty-badge-group">
+              <span class="badge badge-green">Tipo 3: Working Memory &amp; Code Graphs</span>
+              <span class="tech-tag">AST Graphs · CrossCode · Repo Context</span>
+            </div>
+            <h4>3. Memoria Estructural y de Trabajo para Código (AST / Dependency Graphs)</h4>
+          </div>
+          <div class="specialty-grid">
+            <div class="specialty-body">
+              <p>
+                <strong>Filosofía:</strong> Un repositorio no es texto plano; es una red densa de tipos, herencias, llamadas a funciones y referencias cruzadas entre ficheros. Esta memoria mantiene activo un grafo estructural para que el agente recuerde dónde se definen interfaces y clases en otras partes del monorepo.
+              </p>
+              <div class="feature-bullets">
+                <div class="bullet-item">
+                  <div class="bullet-icon">🕸️</div>
+                  <div>
+                    <strong>Grafos de Dependencias &amp; AST:</strong>
+                    <p>Indexa clases, firmas de métodos y módulos importados. Permite responder consultas como <em>"¿qué archivos llaman a `verifySession` y cómo esperan el error?"</em> sin tener que leer cada archivo línea por línea.</p>
+                  </div>
+                </div>
+                <div class="bullet-item">
+                  <div class="bullet-icon">🔄</div>
+                  <div>
+                    <strong>Working State (REPL / Kernel Interactivo):</strong>
+                    <p>Memoria en tiempo de ejecución (como el kernel IPython en PrimeAgent) donde las variables, los DataFrames y los resultados de compilación se mantienen vivos entre pasos de ejecución.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="specialty-sidebar">
+              <div class="spec-card">
+                <h5>Ficha Técnica</h5>
+                <div class="spec-line"><span>Estructura de Datos:</span> <strong>Tree-sitter / Grafo de Símbolos</strong></div>
+                <div class="spec-line"><span>Actualización:</span> <strong>En cada guardado / git diff</strong></div>
+                <div class="spec-line"><span>Resolución:</span> <strong>Definición &rarr; Referencia cruzada</strong></div>
+                <div class="spec-line"><span>Evaluado en:</span> <strong>RepoBench, CrossCodeEval, LongMemCode</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4D: Managed Cloud & Semantic Entity Graphs -->
+        <div class="memory-specialty-section" id="memory-managed">
+          <div class="specialty-header">
+            <div class="specialty-badge-group">
+              <span class="badge badge-orange">Tipo 4: Managed Cloud &amp; Knowledge Extraction</span>
+              <span class="tech-tag">Mem0 · Zep · Letta / MemGPT</span>
+            </div>
+            <h4>4. Memoria Gestionada con Extracción Semántica y Grafo de Entidades</h4>
+          </div>
+          <div class="specialty-grid">
+            <div class="specialty-body">
+              <p>
+                <strong>Filosofía:</strong> Un modelo LLM en segundo plano analiza constantemente las interacciones, extrae entidades ("el usuario prefiere async/await en TypeScript"), detecta contradicciones temporales y las sincroniza en una nube centralizada accesible por múltiples clientes o interfaces.
+              </p>
+              <div class="feature-bullets">
+                <div class="bullet-item">
+                  <div class="bullet-icon">🧠</div>
+                  <div>
+                    <strong>Extracción Automática de Hechos:</strong>
+                    <p>Crea un perfil evolutivo del desarrollador y del proyecto. Resuelve contradicciones cuando una directiva anula a otra anterior.</p>
+                  </div>
+                </div>
+                <div class="bullet-item">
+                  <div class="bullet-icon">☁️</div>
+                  <div>
+                    <strong>Sincronización Multi-Dispositivo:</strong>
+                    <p>Permite que el mismo historial y contexto persistan si el usuario interactúa desde VS Code, el terminal CLI o un bot de Telegram/Slack.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="specialty-sidebar">
+              <div class="spec-card">
+                <h5>Ficha Técnica</h5>
+                <div class="spec-line"><span>Sobrecarga en Escritura:</span> <strong>Alta (Llamada LLM en cada mensaje)</strong></div>
+                <div class="spec-line"><span>Latencia de Escritura:</span> <strong>300ms - 1500ms</strong></div>
+                <div class="spec-line"><span>Backend:</span> <strong>Neo4j, PostgreSQL (pgvector), Zep Server</strong></div>
+                <div class="spec-line"><span>Evaluado en:</span> <strong>LoCoMo, LongMemEval</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 5: Code & Memory Benchmarks -->
+    <section id="code-memory-benchmarks" class="section section-alt">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">05 / Evaluaciones Rigurosas</p>
+            <h3>Benchmarks Relevantes: Código, Navegación y Memoria</h3>
+          </div>
+          <p class="section-subtitle">
+            Para saber si una memoria o un arnés realmente funcionan en ingeniería de software, se necesitan suites que midan desde la recuperación precisa de funciones hasta la resolución de incidencias en repositorios de miles de archivos.
+          </p>
+        </div>
+
+        <!-- Filtros interactivos -->
+        <div class="benchmark-suite-header">
+          <h4>Catálogo de Benchmarks Especializados</h4>
+          <div class="benchmark-filters" role="group" aria-label="Filtro de benchmarks">
+            <button class="bench-filter-btn active" data-filter="all">Todos</button>
+            <button class="bench-filter-btn" data-filter="code-retrieval">Memoria &amp; Búsqueda en Código</button>
+            <button class="bench-filter-btn" data-filter="agent-swe">SWE &amp; Autonomía en Repos</button>
+            <button class="bench-filter-btn" data-filter="long-eval">Consistencia &amp; Second Brain</button>
+          </div>
+        </div>
+
+        <div class="benchmark-grid">
+
+          <!-- 1. LongMemCode -->
+          <div class="benchmark-card featured-card" data-category="code-retrieval">
+            <div class="bench-top">
+              <span class="badge badge-purple">Código + Memoria Determinista</span>
+              <span class="bench-scope">Monorepos (Go, Rust, Py)</span>
+            </div>
+            <h5>LongMemCode</h5>
+            <p class="bench-purpose">
+              Benchmark determinista creado expresamente para evaluar los sistemas de memoria y recuperación de agentes de código (Cursor, Claude Code, Cline, Aider) <strong>sin jueces LLM</strong>.
+            </p>
+            <div class="bench-specs">
+              <div class="spec-row"><span>Qué Evalúa:</span> <strong>Precisión de recuperación en repos gigantes como Kubernetes (2000+ ficheros)</strong></div>
+              <div class="spec-row"><span>Métricas:</span> <strong>Latencia de consulta (ms), Coste en tokens y Exactitud de Contexto</strong></div>
+              <div class="spec-row"><span>Protocolo:</span> <strong>Adaptadores mediante JSON sobre stdio</strong></div>
+            </div>
+          </div>
+
+          <!-- 2. RepoQA -->
+          <div class="benchmark-card" data-category="code-retrieval">
+            <div class="bench-top">
+              <span class="badge badge-blue">Needle in a Haystack Semántico</span>
+              <span class="bench-scope">Multi-lenguaje</span>
+            </div>
+            <h5>RepoQA (Searching Needle Function)</h5>
+            <p class="bench-purpose">
+              Mide la capacidad de encontrar la función exacta en un repositorio masivo mediante descripciones en lenguaje natural sin revelar el nombre ni palabras clave de la función.
+            </p>
+            <div class="bench-specs">
+              <div class="spec-row"><span>Qué Evalúa:</span> <strong>Comprensión semántica de código en contextos largos</strong></div>
+              <div class="spec-row"><span>Lenguajes:</span> <strong>Python, Java, TypeScript, C++, Rust</strong></div>
+              <div class="spec-row"><span>Importancia:</span> <strong>Verifica si la memoria localiza la lógica correcta o solo hace grep ciego</strong></div>
+            </div>
+          </div>
+
+          <!-- 3. SWE-bench & SWE-bench Verified -->
+          <div class="benchmark-card" data-category="agent-swe">
+            <div class="bench-top">
+              <span class="badge badge-green">Estándar de Oro en Software</span>
+              <span class="bench-scope">GitHub Issues Reales</span>
+            </div>
+            <h5>SWE-bench (Lite, Verified &amp; Multimodal)</h5>
+            <p class="bench-purpose">
+              Evalúa la capacidad de un agente autónomo para resolver incidencias reales de GitHub: explorar el repositorio, localizar el bug, generar el parche y pasar la suite de pruebas unitarias.
+            </p>
+            <div class="bench-specs">
+              <div class="spec-row"><span>Memoria Requerida:</span> <strong>Exploración y navegación en miles de archivos</strong></div>
+              <div class="spec-row"><span>Métricas:</span> <strong>Tasa de resolución (% de tests unitarios que pasan)</strong></div>
+              <div class="spec-row"><span>Variantes:</span> <strong>Verified (humano auditado), Multimodal (gráficos/UI), Multilingual</strong></div>
+            </div>
+          </div>
+
+          <!-- 4. RepoBench & CrossCodeEval -->
+          <div class="benchmark-card" data-category="code-retrieval">
+            <div class="bench-top">
+              <span class="badge badge-orange">Estructura Multi-Archivo</span>
+              <span class="bench-scope">Cross-File Context</span>
+            </div>
+            <h5>RepoBench &amp; CrossCodeEval</h5>
+            <p class="bench-purpose">
+              Evalúan la memoria estructural entre archivos: cómo el modelo autocompleta y genera código que depende de clases, tipos y funciones declaradas en otros ficheros del proyecto.
+            </p>
+            <div class="bench-specs">
+              <div class="spec-row"><span>Foco de Memoria:</span> <strong>Referencias cruzadas entre límites de archivos</strong></div>
+              <div class="spec-row"><span>Métricas:</span> <strong>Code Match, Identifier Recall, Retrieval Hit Rate</strong></div>
+              <div class="spec-row"><span>Relevancia:</span> <strong>Evita alucinaciones de métodos o imports inexistentes</strong></div>
+            </div>
+          </div>
+
+          <!-- 5. LongMemEval & LongMemEval-V2 -->
+          <div class="benchmark-card" data-category="long-eval">
+            <div class="bench-top">
+              <span class="badge badge-blue">Second Brain &amp; Trajectory</span>
+              <span class="bench-scope">Hasta 100M+ tokens</span>
+            </div>
+            <h5>LongMemEval &amp; LongMemEval-V2</h5>
+            <p class="bench-purpose">
+              Evalúa la consistencia temporal, actualización de creencias y manejo de información obsoleta. La versión V2 incorpora trazas y trayectorias reales de agentes web y de código.
+            </p>
+            <div class="bench-specs">
+              <div class="spec-row"><span>Sistemas Evaluados:</span> <strong>MemPalace (96.6% Recall@5), Mem0, Zep, Letta</strong></div>
+              <div class="spec-row"><span>Métricas:</span> <strong>Recall@K, Invalidación de hechos caducados</strong></div>
+              <div class="spec-row"><span>Escala:</span> <strong>Pájaros en pajares masivos multi-sesión</strong></div>
+            </div>
+          </div>
+
+          <!-- 6. LoCoMo & PAST-Bench -->
+          <div class="benchmark-card" data-category="long-eval">
+            <div class="bench-top">
+              <span class="badge badge-purple">Trazas &amp; Verificación</span>
+              <span class="bench-scope">Cientos de Sesiones</span>
+            </div>
+            <h5>LoCoMo &amp; PAST-Bench</h5>
+            <p class="bench-purpose">
+              LoCoMo evalúa razonamiento multi-salto sobre cientos de sesiones. PAST-Bench audita si el agente realmente ejecutó el bucle de herramientas (write/retrieve) o si solo alucinó con pesos paramétricos.
+            </p>
+            <div class="bench-specs">
+              <div class="spec-row"><span>Métricas:</span> <strong>MRR, Hit Rate, Fidelidad de traza de ejecución</strong></div>
+              <div class="spec-row"><span>Harness Target:</span> <strong>Hermes Agent, OptMem, ReAct frameworks</strong></div>
+              <div class="spec-row"><span>Prevención:</span> <strong>Detección de falsos positivos en memorias de agentes</strong></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: Test Plan Memoria Agnóstica Sin API Key -->
+    <section id="test-plan-agnostic" class="section">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">05.5 / Metodología Académica</p>
+            <h3>Plan de Pruebas: Memoria Agnóstica con Modelos 100% Locales (Sin API Key)</h3>
+            <p class="section-subtitle">
+              Diseño experimental bajo el constraint de <strong>Memoria Agnóstica</strong>: cero costo de tokens, cero suscripciones y total desacoplamiento entre el modelo, el arnés y el formato de almacenamiento de memoria.
+            </p>
+          </div>
+          <span class="badge" style="background:#059669;color:#fff;">Constraint: 0$ Cost / CPU Local</span>
+        </div>
+
+        <!-- Principles Grid -->
+        <div class="summary-cards" style="margin-bottom: 2.5rem;">
+          <div class="summary-card" style="border-left: 4px solid var(--accent);">
+            <h4>1. Desacoplamiento de Modelo (Model-Agnostic)</h4>
+            <p>
+              La memoria no depende de llamadas propietarias (ej. OpenAI Function Calling). Funciona sobre modelos abiertos estándar vía <strong>Ollama / llama.cpp</strong> (Qwen2.5-Coder, Llama-3.2).
+            </p>
+          </div>
+          <div class="summary-card" style="border-left: 4px solid #3b82f6;">
+            <h4>2. Desacoplamiento de Arnés (Harness-Agnostic)</h4>
+            <p>
+              La misma base de conocimiento puede ser leída y modificada por <strong>Hermes, MemPalace, Letta o Mem0</strong> a través de una interfaz estandarizada (JSONL / Markdown / SQLite local).
+            </p>
+          </div>
+          <div class="summary-card" style="border-left: 4px solid #10b981;">
+            <h4>3. Cero Costo y Privacidad Total (Zero API-Key)</h4>
+            <p>
+              Tanto la inferencia del agente como la extracción semántica y los embeddings se ejecutan localmente en CPU/RAM (<14GB RAM) usando <code>fastembed</code> y cuantizaciones <code>GGUF q4_k_m</code>.
+            </p>
+          </div>
+        </div>
+
+        <!-- Matriz de Modelos y Harnesses -->
+        <div class="glass-panel" style="padding: 1.5rem; margin-bottom: 2.5rem;">
+          <h4 style="margin-top:0; margin-bottom: 1rem; color: var(--text-heading);">Matriz de Harnesses vs. Modelos Locales Evaluados</h4>
+          <div class="comparison-table-wrapper">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>Arnés / Sistema</th>
+                  <th>Tipo de Memoria</th>
+                  <th>Modelo LLM Recomendado (Sin API Key)</th>
+                  <th>Embeddings Locales (0$)</th>
+                  <th>Consumo RAM Est.</th>
+                  <th>Prueba Clave de Rendimiento</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Hermes + OptMem</strong></td>
+                  <td>Archivos curados + BM25 Lexical</td>
+                  <td><code>Qwen2.5-Coder-3B</code> (Ollama)</td>
+                  <td>No requiere (Determinista BM25)</td>
+                  <td>~2.5 GB</td>
+                  <td>Cero degradación de caché y latencia mínima en CPU</td>
+                </tr>
+                <tr>
+                  <td><strong>MemPalace</strong></td>
+                  <td>Espacial Loci (Alas/Pasillos/Cajones)</td>
+                  <td><code>Qwen2.5-Coder-7B</code> o <code>3B</code></td>
+                  <td><code>bge-small-en-v1.5</code> (FastEmbed)</td>
+                  <td>~3.2 - 5.5 GB</td>
+                  <td>Recall@5 (96.6%) con solo ~170 tokens de boot footprint</td>
+                </tr>
+                <tr>
+                  <td><strong>Letta (MemGPT Local)</strong></td>
+                  <td>Jerárquica (Core/Archival/Recall)</td>
+                  <td><code>Qwen2.5-Coder-7B-Instruct</code></td>
+                  <td>ChromaDB + <code>all-MiniLM-L6-v2</code></td>
+                  <td>~6.0 GB</td>
+                  <td>Paginación y consistencia temporal en multi-sesión</td>
+                </tr>
+                <tr>
+                  <td><strong>Mem0 (Open-Source)</strong></td>
+                  <td>Grafo y Vectorial de Entidades</td>
+                  <td><code>Llama-3.2-3B</code></td>
+                  <td>SentenceTransformers local</td>
+                  <td>~4.0 GB</td>
+                  <td>Extracción de preferencias y reglas de código en background</td>
+                </tr>
+                <tr>
+                  <td><strong>PrimeAgent / AST Memory</strong></td>
+                  <td>Árbol Sintáctico (Tree-sitter) + REPL</td>
+                  <td><code>Qwen2.5-Coder-3B</code></td>
+                  <td>Determinista (AST Graph)</td>
+                  <td>~2.2 GB</td>
+                  <td>Resolución exacta de dependencias sin alucinación</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Fases del Protocolo de Pruebas -->
+        <h4 style="color: var(--text-heading); margin-bottom: 1rem;">Protocolo de Pruebas en 4 Fases (Reproducible para el Laboratorio)</h4>
+        <div class="spec-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 2rem;">
+          <div class="spec-box">
+            <span class="spec-label">Fase 1: Preparación del Entorno</span>
+            <strong class="spec-val">Setup 100% Local</strong>
+            <p class="spec-desc">
+              Instalación de servidor Ollama local con modelos cuantizados (3B y 7B) y biblioteca FastEmbed para embeddings ligeros en CPU sin dependencias externas.
+            </p>
+          </div>
+          <div class="spec-box">
+            <span class="spec-label">Fase 2: Benchmarks de Código</span>
+            <strong class="spec-val">LongMemCode &amp; RepoQA</strong>
+            <p class="spec-desc">
+              Inyección de 20 funciones "needle" en un repositorio de prueba. Medición de tasa de acierto (Top-1 Recall) y tiempo de respuesta sin juez comercial.
+            </p>
+          </div>
+          <div class="spec-box">
+            <span class="spec-label">Fase 3: Persistencia Temporal</span>
+            <strong class="spec-val">LoCoMo &amp; Multisesión</strong>
+            <p class="spec-desc">
+              Prueba de 20 sesiones simuladas donde se definen reglas de arquitectura en la sesión 1 y se audita su cumplimiento estricto en la sesión 20.
+            </p>
+          </div>
+          <div class="spec-box">
+            <span class="spec-label">Fase 4: Test de Portabilidad</span>
+            <strong class="spec-val">Transfer Test Agnóstico</strong>
+            <p class="spec-desc">
+              Generar la memoria en un arnés (ej. MemPalace) y transferir el almacenamiento a otro arnés (ej. Hermes) sin reindexar, validando el desacople total.
+            </p>
+          </div>
+        </div>
+
+        <!-- Comandos de Reproducción Rápida -->
+        <div class="glass-panel" style="padding: 1.5rem; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.1);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <strong style="color:#38bdf8;">Comandos Rápidos de Reproducción (Terminal Linux / CPU)</strong>
+            <span class="badge" style="background:#1e293b; color:#94a3b8; border:1px solid #334155;">Bash / CLI</span>
+          </div>
+          <pre style="margin:0; padding:1rem; background:#0b0f19; border-radius:6px; overflow-x:auto; font-size:0.85rem; line-height:1.5; color:#e2e8f0;"><code># 1. Iniciar modelo de código local sin API Key
+ollama run qwen2.5-coder:3b
+
+# 2. Instalar dependencias para embeddings locales y evaluación determinista
+pip install fastembed chromadb sentence-transformers tree-sitter
+
+# 3. Ejecutar suite de pruebas de memoria agnóstica
+python3 test_agnostic_memory.py --harness all --benchmark longmemcode --model qwen2.5-coder:3b</code></pre>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 6: Architecture & Integration -->
+    <section id="architecture" class="section">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">06 / Sinergia Total</p>
+            <h3>Cómo Encajan Todos los Arneses y Memorias</h3>
+          </div>
+        </div>
+
+        <div class="summary-cards">
+          <div class="summary-card">
+            <h4>1. Pi as the Minimalist Foundation</h4>
+            <p>
+              By proving that four basic tools and a small system prompt are all a strong model needs, Pi serves as an ideal baseline and inspiration for other frameworks (including being the UI foundation for PrimeAgent).
+            </p>
+          </div>
+          <div class="summary-card">
+            <h4>2. Hermes as the Versatile Operator</h4>
+            <p>
+              Hermes proves that when an agent needs broad real-world utility—like orchestrating browser tools, running background schedules, or coordinating subagents—a structured gateway harness is essential.
+            </p>
+          </div>
+          <div class="summary-card">
+            <h4>3. SWE-bench as the Truth Arbiter</h4>
+            <p>
+              Without a standardized evaluation harness like SWE-bench, measuring whether an agent is truly improving or just hallucinating would be impossible. It provides the objective finish line.
+            </p>
+          </div>
+          <div class="summary-card">
+            <h4>4. PrimeAgent as the Reasoning Frontier</h4>
+            <p>
+              PrimeAgent shows that the harness itself can provide reasoning compute. By granting persistent execution state, it pushes open-weights models to solve problems once thought to require human research mathematicians.
+            </p>
+          </div>
+          <div class="summary-card">
+            <h4>5. MemPalace &amp; OptMem as the Persistent Second Brain</h4>
+            <p>
+              An agent without long-term memory is forced to re-learn user preferences, architectural rules, and project decisions from scratch in every session. By coupling spatial hierarchy (MemPalace) or lightweight append-only logs (OptMem) to the harness, agents evolve into continuous personal collaborators.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>Created in <code>my-repo</code> · Research &amp; Structure by Antigravity · Human-Readable Redaction Pass · Fully standalone via <code>file://</code></p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
