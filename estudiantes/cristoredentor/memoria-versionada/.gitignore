@@ -1,0 +1,5 @@
+# Lista local de palabras prohibidas (nombres reales, correos, proyectos privados).
+# mem.py la usa para rechazar notas, pero nunca se publica.
+local/
+__pycache__/
+.pytest_cache/
