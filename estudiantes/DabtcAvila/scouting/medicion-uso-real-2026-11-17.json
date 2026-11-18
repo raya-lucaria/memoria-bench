@@ -1,0 +1,314 @@
+{
+ "sessions": 183,
+ "sessions_with_cross": 14,
+ "sessions_with_own_mem_access": 171,
+ "total_calls": 45235,
+ "cross_calls": 35,
+ "own_calls": 1679,
+ "hunt_calls": 868,
+ "models": [
+  [
+   "claude-opus-5-5",
+   39065
+  ],
+  [
+   "claude-fable-5-1",
+   33807
+  ],
+  [
+   "claude-fable-5-2",
+   7592
+  ]
+ ],
+ "start_ctx_median": 62630,
+ "peak_ctx_median": 384012,
+ "projects": [
+  {
+   "p": "proyecto-01",
+   "sessions": 67,
+   "mem": 171,
+   "idx_bytes": 31307,
+   "idx_lines": 171,
+   "start_med": 68198,
+   "peak_med": 421179,
+   "calls": 14707,
+   "cross_sessions": 2,
+   "cross_calls": 3,
+   "hunt": 322,
+   "mem_read": 135,
+   "cross_targets": [
+    [
+     "proyecto-02",
+     2
+    ]
+   ]
+  },
+  {
+   "p": "proyecto-02",
+   "sessions": 55,
+   "mem": 118,
+   "idx_bytes": 26248,
+   "idx_lines": 162,
+   "start_med": 62385,
+   "peak_med": 451532,
+   "calls": 16352,
+   "cross_sessions": 4,
+   "cross_calls": 10,
+   "hunt": 337,
+   "mem_read": 111,
+   "cross_targets": [
+    [
+     "proyecto-01",
+     2
+    ],
+    [
+     "proyecto-14",
+     1
+    ],
+    [
+     "proyecto-15",
+     1
+    ]
+   ]
+  },
+  {
+   "p": "proyecto-03",
+   "sessions": 23,
+   "mem": 13,
+   "idx_bytes": 3034,
+   "idx_lines": 13,
+   "start_med": 56689,
+   "peak_med": 314388,
+   "calls": 3435,
+   "cross_sessions": 1,
+   "cross_calls": 4,
+   "hunt": 36,
+   "mem_read": 13,
+   "cross_targets": [
+    [
+     "proyecto-01",
+     1
+    ]
+   ]
+  },
+  {
+   "p": "proyecto-04",
+   "sessions": 11,
+   "mem": 75,
+   "idx_bytes": 12465,
+   "idx_lines": 75,
+   "start_med": 60039,
+   "peak_med": 369267,
+   "calls": 3309,
+   "cross_sessions": 1,
+   "cross_calls": 1,
+   "hunt": 38,
+   "mem_read": 39,
+   "cross_targets": [
+    [
+     "proyecto-01",
+     1
+    ]
+   ]
+  },
+  {
+   "p": "proyecto-05",
+   "sessions": 7,
+   "mem": 3,
+   "idx_bytes": 393,
+   "idx_lines": 3,
+   "start_med": 53955,
+   "peak_med": 99958,
+   "calls": 987,
+   "cross_sessions": 0,
+   "cross_calls": 0,
+   "hunt": 9,
+   "mem_read": 3,
+   "cross_targets": []
+  },
+  {
+   "p": "proyecto-06",
+   "sessions": 5,
+   "mem": 8,
+   "idx_bytes": 1438,
+   "idx_lines": 8,
+   "start_med": 53279,
+   "peak_med": 906138,
+   "calls": 2730,
+   "cross_sessions": 2,
+   "cross_calls": 7,
+   "hunt": 42,
+   "mem_read": 8,
+   "cross_targets": [
+    [
+     "proyecto-16",
+     1
+    ],
+    [
+     "proyecto-17",
+     1
+    ],
+    [
+     "proyecto-01",
+     1
+    ]
+   ]
+  },
+  {
+   "p": "proyecto-foco",
+   "sessions": 4,
+   "mem": 2,
+   "idx_bytes": 279,
+   "idx_lines": 2,
+   "start_med": 54008,
+   "peak_med": 327492,
+   "calls": 467,
+   "cross_sessions": 1,
+   "cross_calls": 4,
+   "hunt": 13,
+   "mem_read": 2,
+   "cross_targets": [
+    [
+     "proyecto-04",
+     1
+    ]
+   ]
+  },
+  {
+   "p": "proyecto-07",
+   "sessions": 3,
+   "mem": 97,
+   "idx_bytes": 23635,
+   "idx_lines": 80,
+   "start_med": 62644,
+   "peak_med": 896271,
+   "calls": 1530,
+   "cross_sessions": 0,
+   "cross_calls": 0,
+   "hunt": 29,
+   "mem_read": 5,
+   "cross_targets": []
+  },
+  {
+   "p": "proyecto-08",
+   "sessions": 2,
+   "mem": 1,
+   "idx_bytes": 169,
+   "idx_lines": 1,
+   "start_med": 53094,
+   "peak_med": 269378,
+   "calls": 374,
+   "cross_sessions": 0,
+   "cross_calls": 0,
+   "hunt": 8,
+   "mem_read": 1,
+   "cross_targets": []
+  },
+  {
+   "p": "proyecto-09",
+   "sessions": 2,
+   "mem": 8,
+   "idx_bytes": 1525,
+   "idx_lines": 8,
+   "start_med": 55427,
+   "peak_med": 217446,
+   "calls": 64,
+   "cross_sessions": 1,
+   "cross_calls": 2,
+   "hunt": 2,
+   "mem_read": 2,
+   "cross_targets": [
+    [
+     "proyecto-04",
+     1
+    ]
+   ]
+  },
+  {
+   "p": "proyecto-10",
+   "sessions": 1,
+   "mem": 5,
+   "idx_bytes": 943,
+   "idx_lines": 5,
+   "start_med": 49690,
+   "peak_med": 965299,
+   "calls": 892,
+   "cross_sessions": 0,
+   "cross_calls": 0,
+   "hunt": 8,
+   "mem_read": 5,
+   "cross_targets": []
+  },
+  {
+   "p": "proyecto-11",
+   "sessions": 1,
+   "mem": 0,
+   "idx_bytes": 0,
+   "idx_lines": 0,
+   "start_med": 53622,
+   "peak_med": 175020,
+   "calls": 29,
+   "cross_sessions": 1,
+   "cross_calls": 1,
+   "hunt": 7,
+   "mem_read": 0,
+   "cross_targets": [
+    [
+     "proyecto-foco",
+     1
+    ]
+   ]
+  },
+  {
+   "p": "proyecto-12",
+   "sessions": 1,
+   "mem": 1,
+   "idx_bytes": 153,
+   "idx_lines": 1,
+   "start_med": 49817,
+   "peak_med": 626630,
+   "calls": 293,
+   "cross_sessions": 1,
+   "cross_calls": 3,
+   "hunt": 3,
+   "mem_read": 1,
+   "cross_targets": [
+    [
+     "proyecto-18",
+     1
+    ],
+    [
+     "proyecto-06",
+     1
+    ]
+   ]
+  },
+  {
+   "p": "proyecto-13",
+   "sessions": 1,
+   "mem": 5,
+   "idx_bytes": 723,
+   "idx_lines": 5,
+   "start_med": 55582,
+   "peak_med": 175711,
+   "calls": 66,
+   "cross_sessions": 0,
+   "cross_calls": 0,
+   "hunt": 14,
+   "mem_read": 3,
+   "cross_targets": []
+  }
+ ],
+ "mem_total": 605,
+ "mem_ever_read": 330,
+ "mem_read_by_other_project": 0,
+ "links": {
+  "own": 804,
+  "cross": 1,
+  "dangling": 163
+ },
+ "unified_index_bytes": 160354,
+ "unified_index_lines": 1069,
+ "all_mem_bytes": 2220851,
+ "dup_names": 10
+}

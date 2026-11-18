@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memoria de agentes · números</title>
+<style>
+:root{--bg:#f7f6f2;--surface:#fcfcfb;--ink:#141413;--ink2:#52514e;--ink3:#7b7a74;--line:#e2e0d8;--accent:#1f5fae;--soft:#eef2f8;
+ --bar:#2a78d6;--good:#1d7a46;--bad:#b3362f;--warn:#9a6a00;--goodbg:#e6f3ea;--badbg:#fae7e5;--warnbg:#fbf1d9}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#121211;--surface:#1a1a19;--ink:#f0efec;--ink2:#c3c2b7;--ink3:#8f8e86;--line:#32312e;--accent:#7db0f0;--soft:#1f2630;
+ --bar:#3987e5;--good:#6fcf97;--bad:#f08a84;--warn:#e3b341;--goodbg:#16291d;--badbg:#2e1816;--warnbg:#2c2410}}
+:root[data-theme="dark"]{--bg:#121211;--surface:#1a1a19;--ink:#f0efec;--ink2:#c3c2b7;--ink3:#8f8e86;--line:#32312e;--accent:#7db0f0;--soft:#1f2630;
+ --bar:#3987e5;--good:#6fcf97;--bad:#f08a84;--warn:#e3b341;--goodbg:#16291d;--badbg:#2e1816;--warnbg:#2c2410}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Palatino,"Palatino Linotype","Book Antiqua","URW Palladio L",serif;font-size:16px;line-height:1.45}
+a{color:var(--accent)}
+header{padding:20px 16px 0;max-width:1280px;margin:0 auto}
+h1{font-size:26px;margin:0 0 2px;font-weight:600}
+.meta{color:var(--ink2);font-size:14px}
+nav{position:sticky;top:0;z-index:6;background:var(--bg);border-bottom:1px solid var(--line);margin-top:12px}
+nav div{max-width:1280px;margin:0 auto;padding:8px 16px;display:flex;gap:4px;overflow-x:auto;white-space:nowrap;align-items:center}
+nav button{font:inherit;font-size:15px;border:0;background:none;color:var(--ink2);padding:6px 12px;border-radius:6px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+nav .th{margin-left:auto;border:1px solid var(--line);font-size:13px}
+main{max-width:1280px;margin:0 auto;padding:8px 16px 80px}
+section{display:none}section.on{display:block}
+h2{font-size:21px;margin:26px 0 2px;font-weight:600}
+h3{font-size:17px;margin:22px 0 2px;font-weight:600}
+.cap{color:var(--ink2);font-size:14px;margin:0 0 8px;max-width:110ch}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi b{display:block;font-size:28px;line-height:1.1;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi span{font-size:13.5px;color:var(--ink2)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:6px 0 4px}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12.5px;color:var(--ink2);font-weight:600;white-space:nowrap;background:var(--surface)}
+th[data-s]{cursor:pointer}th[data-s]:hover{color:var(--ink)}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.hi{background:var(--soft);font-weight:600}
+tr.avg td{font-weight:600;border-top:2px solid var(--line)}
+.t{display:inline-block;font:12px ui-sans-serif,system-ui,sans-serif;padding:1px 7px;border-radius:99px;white-space:nowrap}
+.t.g{background:var(--goodbg);color:var(--good)}.t.b{background:var(--badbg);color:var(--bad)}.t.w{background:var(--warnbg);color:var(--warn)}.t.x{border:1px solid var(--line);color:var(--ink2)}
+.up{color:var(--good)}.dn{color:var(--bad)}
+.vb{display:inline-block;height:8px;border-radius:0 3px 3px 0;background:var(--bar);vertical-align:middle;margin-left:8px}
+.fl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.fl select,.fl input{font:inherit;font-size:14.5px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.fl input{min-width:220px}
+.src{font-size:13px;color:var(--ink2)}
+.verd{border-left:4px solid var(--accent);background:var(--soft);padding:12px 16px;border-radius:0 10px 10px 0;margin:12px 0;max-width:110ch}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.85em;background:var(--soft);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Memoria de agentes: números para decidir</h1>
+  <div class="meta">Corte: 17-nov-2026 · Pregunta: ¿memoria unificada entre proyectos o memorias por proyecto? · scouting de DabtcAvila para memoria-bench</div>
+</header>
+<nav><div id="tabs"></div></nav>
+<main>
+
+<section id="decision">
+  <div class="verd"><strong>Lectura de los números:</strong> hoy no hay evidencia para unificar. En la máquina medida, 7.7 % de las sesiones leyó memoria de otro proyecto y un índice unificado pesaría 6.4 veces el tope que carga Claude Code. Con modelos vigentes: Claude Code sobre archivos con Opus 5.5 acierta 97 % contra 95 % de Mem0 (MemoryTax, oct-2026); en tareas de código encadenadas, sin memoria 38.5 %, Mem0 39.6 %, historial completo 40.6 % (CoReMem, nov-2026); y en la prueba de Anthropic del 6-nov una página compartida conservó 41 de 57 datos contra 57 de 57 con una página por contrato. El dato en contra: el mismo estudio de Anthropic muestra que búsqueda más una wiki consolidada sube de 53 a 61 % de criterios cumplidos. El proyecto foco tiene solo 4 sesiones: muestra insuficiente.</div>
+
+  <h2>Uso real medido en una máquina</h2>
+  <p class="cap">Un solo usuario; los nombres de proyecto están anonimizados. Fuente: transcripciones de Claude Code del 15-oct al 17-nov-2026. 183 sesiones, 45,235 llamadas a herramientas, 37 carpetas de memoria. Solo lectura. Se repite con <code>python3 medir.py salida.json</code>.</p>
+  <div class="kpis" id="kpis"></div>
+
+  <h3>Criterios de decisión</h3>
+  <p class="cap">Los umbrales son propuesta mía, ajustables. «Unificar» se justifica si se cumplen al menos tres.</p>
+  <div class="tw"><table id="crit"></table></div>
+
+  <h3>Por proyecto</h3>
+  <p class="cap">«Cruce» = la sesión leyó la carpeta de memoria de otro proyecto. «Leídas» = memorias abiertas al menos una vez por una herramienta (cota inferior: no cuenta lo que se usó solo desde el índice).</p>
+  <div class="tw"><table id="proj"></table></div>
+
+  <h3>Opciones a comparar</h3>
+  <div class="tw"><table id="opts"></table></div>
+</section>
+
+<section id="hoy">
+  <h2>Modelos vigentes al 17-nov-2026</h2>
+  <p class="cap">Solo resultados medidos con la generación actual. GPT-6.2 Astra y Sol salieron hoy y no tienen ninguna medición. Ningún laboratorio publica una evaluación de memoria en sus fichas de modelo, y las tablas públicas de memoria (LongMemEval-V2, Letta Context-Bench, MemoryArena) no tienen entradas con estos modelos.</p>
+  <h3>Cobertura: qué modelo tiene números de memoria</h3>
+  <div class="tw"><table id="h_cov"></table></div>
+  <h3>MemoryTax · 21-oct-2026 · independiente · 152 preguntas, una corrida</h3>
+  <p class="cap">Los tres harness leen el historial desde un archivo, sin producto de memoria.</p>
+  <div class="tw"><table id="h_tax"></table></div>
+  <h3>CoReMem / ChainSWE · 12-nov-2026 · independiente · 48 cadenas de tareas de código · Opus 5.5</h3>
+  <div class="tw"><table id="h_core"></table></div>
+  <h3>Anthropic, «Components of agent memory» · 6-nov-2026 · reportado por Anthropic</h3>
+  <p class="cap">CL-Bench: recompensa media de 0 a 1, sin estado contra con memoria.</p>
+  <div class="tw"><table id="h_cl"></table></div>
+  <div class="tw"><table id="h_wiki"></table></div>
+  <h3>FrontierMemory v1.1 (Letta) · 29-oct-2026 · reportado por Letta · 15 tareas, 3 corridas, sin juez automático</h3>
+  <p class="cap">El modelo listado escribe la memoria; la tarea la ejecutan Opus 5.5 y GPT-6 Sol y cuenta el mejor. Una tarea vale 6.7 puntos.</p>
+  <div class="tw"><table id="h_fm"></table></div>
+  <div class="tw"><table id="h_fmh"></table></div>
+  <h3>Compactación de contexto · 22-oct-2026 · independiente · 1,514 tareas de datos</h3>
+  <div class="tw"><table id="h_comp"></table></div>
+  <h3>Vendedores con modelos vigentes · autorreportado</h3>
+  <div class="tw"><table id="h_vend"></table></div>
+  <h3>Memoria añadida a agentes de código · Hindsight (vendedor) · 61 tareas, 3 corridas · modelo no declarado</h3>
+  <div class="tw"><table id="h_hs"></table></div>
+  <h3>DolphinBench · sep-2026 · autores de Mem0 · generación anterior</h3>
+  <div class="tw"><table id="h_dol"></table></div>
+  <h3>Contexto: harness × modelo en código, sin memoria · Terminal-Bench 4.0, leído hoy</h3>
+  <div class="tw"><table id="h_tb"></table></div>
+  <h3>Contexto largo sin memoria</h3>
+  <div class="tw"><table id="h_lc"></table></div>
+</section>
+
+<section id="nl">
+  <h2>Lenguaje natural: memoria de conversación</h2>
+  <p class="cap">Solo mediciones independientes o con el mismo lector. Casi todo aquí usa modelos de 2025; lo medido con modelos vigentes está en la pestaña «Modelos de hoy».</p>
+  <h3>MemoryAgentBench · UC San Diego · GPT-4o-mini salvo nota</h3>
+  <div class="tw"><table id="mab"></table></div>
+  <h3>Estudio de 12 sistemas · arXiv 2606.24775 · jun-2026</h3>
+  <p class="cap">Robustez ante datos que cambian, y latencia. EM = coincidencia exacta; SubEM = la respuesta contiene la clave.</p>
+  <div class="tw"><table id="ready"></table></div>
+  <h3>AMA-Bench · trayectorias de agentes · lector Qwen3-32B</h3>
+  <div class="tw"><table id="ama"></table></div>
+  <h3>MemoryArena · tareas encadenadas entre sesiones · agente GPT-5.1-mini</h3>
+  <div class="tw"><table id="arena"></table></div>
+  <h3>BEAM · puntaje por tamaño del historial</h3>
+  <div class="tw"><table id="beam"></table></div>
+  <h3>LongMemEval con el mismo lector (GPT-4o)</h3>
+  <div class="tw"><table id="lme"></table></div>
+</section>
+
+<section id="code">
+  <h2>Código: ¿la memoria ayuda a terminar la tarea?</h2>
+  <p class="cap">Estas pruebas usan modelos anteriores a septiembre de 2026. Con Opus 5.5: CoReMem, en «Modelos de hoy».</p>
+  <h3>VibeMemBench · sep-2026 · 111 tareas × 4 corridas · % resuelto</h3>
+  <p class="cap">«Experiencia verificada» = se le da al agente la experiencia correcta, sin sistema de memoria. Δ en puntos contra memoria apagada.</p>
+  <div class="tw"><table id="vibe"></table></div>
+  <h3>SWE-ContextBench Lite · 99 tareas · Claude Sonnet 4.5</h3>
+  <div class="tw"><table id="swe4"></table></div>
+  <h3>DreamBench-SWE · ago-2026 · 180 tareas</h3>
+  <div class="tw"><table id="dream"></table></div>
+  <h3>CAPA · jul-2026 · 300 sesiones · historial del mismo usuario</h3>
+  <p class="cap">ES = la solución corre. 1.ª = corre al primer intento, sin preguntar. Turnos = hasta terminar.</p>
+  <div class="tw"><table id="capa"></table></div>
+  <h3>LongMemEval-V2 · 451 preguntas · 25 a 115 millones de tokens</h3>
+  <div class="tw"><table id="lme2"></table></div>
+  <h3>Archivos de contexto siempre cargados (AGENTS.md, CLAUDE.md)</h3>
+  <p class="cap">Mide el costo de «más contexto fijo», que es lo que haría una memoria unificada siempre cargada.</p>
+  <div class="tw"><table id="ctxf"></table></div>
+</section>
+
+<section id="harness">
+  <h2>Harness: mismo modelo, distinto harness y distinta memoria</h2>
+  <h3>SCLATE (Apple) · sep-2026 · 346 rondas en 30 días de trabajo simulado · % aprobado (millones de tokens)</h3>
+  <p class="cap">La comparación más directa que existe de harness × modelo × memoria. «Nativa» = la memoria propia del harness. Modelos de la generación anterior (Opus 4.8, Sonnet 5, GPT-5.4); con Opus 5.5 ver MemoryTax.</p>
+  <div class="tw"><table id="sclate"></table></div>
+  <div class="tw"><table id="sclate2"></table></div>
+  <h3>MemoryTax · oct-2026 · 152 preguntas · % acierto y dólares por pregunta</h3>
+  <p class="cap">Una sola corrida por celda. Pi, Codex y Claude Code trabajan sobre archivos, sin producto de memoria.</p>
+  <div class="tw"><table id="tax"></table></div>
+  <h3>SWE-ContextBench · cinco agentes · sin experiencia contra resumen correcto</h3>
+  <div class="tw"><table id="swe3"></table></div>
+  <h3>Seguridad: inyección entre sesiones por memoria persistente · MemHarmBench · nov-2026</h3>
+  <div class="tw"><table id="harm"></table></div>
+</section>
+
+<section id="models">
+  <h2>Modelos: cuánto depende el resultado del modelo</h2>
+  <h3>Mismo sistema de memoria, distinto modelo lector</h3>
+  <div class="tw"><table id="reader"></table></div>
+  <h3>Context-Bench (Letta) · actualizado 13-mar-2026 · reportado por Letta</h3>
+  <p class="cap">Archivos = buscar y razonar sobre archivos. Habilidades = encontrar y cargar la habilidad correcta.</p>
+  <div class="tw"><table id="cbench"></table></div>
+  <h3>AMA-Bench · contexto largo, sin sistema de memoria</h3>
+  <div class="tw"><table id="amalc"></table></div>
+</section>
+
+<section id="limits">
+  <h2>Restricciones</h2>
+  <h3>Por harness · documentación oficial leída el 17-nov-2026</h3>
+  <div class="tw"><table id="hlim"></table></div>
+  <h3>Por modelo</h3>
+  <div class="tw"><table id="mlim"></table></div>
+  <h3>Costo y latencia medidos</h3>
+  <div class="tw"><table id="cost"></table></div>
+</section>
+
+<section id="explore">
+  <h2>Explorador</h2>
+  <p class="cap">Por omisión muestra solo modelos vigentes al 17-nov-2026. Todos los números en una tabla. Clic en un encabezado para ordenar. «Quién»: independiente = sin producto en la tabla; propio = lo reporta el vendedor; competidor = lo midió un rival.</p>
+  <div class="fl">
+    <select id="fvig"><option value="a">Solo modelos vigentes</option><option value="ap">Vigentes y generación anterior</option><option value="">Todos los modelos</option></select><select id="fcat"></select><select id="fbench"></select><select id="fwho"></select>
+    <input id="fq" type="search" placeholder="Buscar sistema, modelo, harness…">
+    <span class="src" id="fcount"></span>
+  </div>
+  <div class="tw"><table id="xt"></table></div>
+</section>
+
+<section id="proto">
+  <h2>Protocolo de medición propio</h2>
+  <p class="cap">Agnóstico a harness y modelo: la memoria es una carpeta de texto, la tarea es una pregunta con respuesta verificable, y la calificación la hace un script contra una clave fija, sin juez automático.</p>
+  <h3>Qué se mide</h3>
+  <div class="tw"><table id="pm"></table></div>
+  <h3>Diseño</h3>
+  <div class="tw"><table id="pd"></table></div>
+  <h3>Cómo se conecta cada harness a la misma carpeta</h3>
+  <div class="tw"><table id="ph"></table></div>
+  <h3>Ruido de referencia en la literatura</h3>
+  <div class="tw"><table id="pn"></table></div>
+</section>
+
+</main>
+<script>
+const LOCAL={"sessions":183,"sessions_with_cross":14,"sessions_with_own_mem_access":171,"total_calls":45235,"cross_calls":35,"own_calls":1679,"hunt_calls":868,"models":[["claude-opus-5-5",39065],["claude-fable-5-1",33807],["claude-fable-5-2",7592]],"start_ctx_median":62630,"peak_ctx_median":384012,"projects":[{"p":"proyecto-01","sessions":67,"mem":171,"idx_bytes":31307,"idx_lines":171,"start_med":68198,"peak_med":421179,"calls":14707,"cross_sessions":2,"cross_calls":3,"hunt":322,"mem_read":135,"cross_targets":[["proyecto-02",2]]},{"p":"proyecto-02","sessions":55,"mem":118,"idx_bytes":26248,"idx_lines":162,"start_med":62385,"peak_med":451532,"calls":16352,"cross_sessions":4,"cross_calls":10,"hunt":337,"mem_read":111,"cross_targets":[["proyecto-01",2],["proyecto-14",1],["proyecto-15",1]]},{"p":"proyecto-03","sessions":23,"mem":13,"idx_bytes":3034,"idx_lines":13,"start_med":56689,"peak_med":314388,"calls":3435,"cross_sessions":1,"cross_calls":4,"hunt":36,"mem_read":13,"cross_targets":[["proyecto-01",1]]},{"p":"proyecto-04","sessions":11,"mem":75,"idx_bytes":12465,"idx_lines":75,"start_med":60039,"peak_med":369267,"calls":3309,"cross_sessions":1,"cross_calls":1,"hunt":38,"mem_read":39,"cross_targets":[["proyecto-01",1]]},{"p":"proyecto-05","sessions":7,"mem":3,"idx_bytes":393,"idx_lines":3,"start_med":53955,"peak_med":99958,"calls":987,"cross_sessions":0,"cross_calls":0,"hunt":9,"mem_read":3,"cross_targets":[]},{"p":"proyecto-06","sessions":5,"mem":8,"idx_bytes":1438,"idx_lines":8,"start_med":53279,"peak_med":906138,"calls":2730,"cross_sessions":2,"cross_calls":7,"hunt":42,"mem_read":8,"cross_targets":[["proyecto-16",1],["proyecto-17",1],["proyecto-01",1]]},{"p":"proyecto-foco","sessions":4,"mem":2,"idx_bytes":279,"idx_lines":2,"start_med":54008,"peak_med":327492,"calls":467,"cross_sessions":1,"cross_calls":4,"hunt":13,"mem_read":2,"cross_targets":[["proyecto-04",1]]},{"p":"proyecto-07","sessions":3,"mem":97,"idx_bytes":23635,"idx_lines":80,"start_med":62644,"peak_med":896271,"calls":1530,"cross_sessions":0,"cross_calls":0,"hunt":29,"mem_read":5,"cross_targets":[]},{"p":"proyecto-08","sessions":2,"mem":1,"idx_bytes":169,"idx_lines":1,"start_med":53094,"peak_med":269378,"calls":374,"cross_sessions":0,"cross_calls":0,"hunt":8,"mem_read":1,"cross_targets":[]},{"p":"proyecto-09","sessions":2,"mem":8,"idx_bytes":1525,"idx_lines":8,"start_med":55427,"peak_med":217446,"calls":64,"cross_sessions":1,"cross_calls":2,"hunt":2,"mem_read":2,"cross_targets":[["proyecto-04",1]]},{"p":"proyecto-10","sessions":1,"mem":5,"idx_bytes":943,"idx_lines":5,"start_med":49690,"peak_med":965299,"calls":892,"cross_sessions":0,"cross_calls":0,"hunt":8,"mem_read":5,"cross_targets":[]},{"p":"proyecto-11","sessions":1,"mem":0,"idx_bytes":0,"idx_lines":0,"start_med":53622,"peak_med":175020,"calls":29,"cross_sessions":1,"cross_calls":1,"hunt":7,"mem_read":0,"cross_targets":[["proyecto-foco",1]]},{"p":"proyecto-12","sessions":1,"mem":1,"idx_bytes":153,"idx_lines":1,"start_med":49817,"peak_med":626630,"calls":293,"cross_sessions":1,"cross_calls":3,"hunt":3,"mem_read":1,"cross_targets":[["proyecto-18",1],["proyecto-06",1]]},{"p":"proyecto-13","sessions":1,"mem":5,"idx_bytes":723,"idx_lines":5,"start_med":55582,"peak_med":175711,"calls":66,"cross_sessions":0,"cross_calls":0,"hunt":14,"mem_read":3,"cross_targets":[]}],"mem_total":605,"mem_ever_read":330,"mem_read_by_other_project":0,"links":{"own":804,"cross":1,"dangling":163},"unified_index_bytes":160354,"unified_index_lines":1069,"all_mem_bytes":2220851,"dup_names":10};
+const SRC={mab:"https://arxiv.org/html/2507.05257v3",mem0p:"https://arxiv.org/html/2504.19413",zepp:"https://arxiv.org/html/2501.13956",zepi:"https://github.com/getzep/zep-papers/issues/5",letta:"https://www.letta.com/blog/benchmarking-ai-agent-memory",mem0b:"https://mem0.ai/blog/mem0-the-token-efficient-memory-algorithm",audit:"https://github.com/dial481/locomo-audit",hind:"https://arxiv.org/abs/2512.12818",mastra:"https://mastra.ai/research/observational-memory",redis:"https://redis.io/resources/agent-memory-benchmark-report/",dev:"https://dev.to/gaurav_dadhich/the-state-of-ai-memory-in-2026-claimed-vs-observed-1n94",mp:"https://github.com/MemPalace/mempalace/blob/main/benchmarks/BENCHMARKS.md",beam:"https://arxiv.org/html/2510.27246v1",hindb:"https://hindsight.vectorize.io/blog/2026/04/02/beam-sota",lplus:"https://arxiv.org/html/2602.10715",ready:"https://arxiv.org/html/2606.24775",vibe:"https://arxiv.org/html/2609.23570",arena:"https://arxiv.org/html/2602.16313",ama:"https://arxiv.org/html/2602.22769",cb:"https://leaderboard.letta.com",capa:"https://arxiv.org/html/2607.26611",sclate:"https://arxiv.org/html/2609.32391",tax:"https://arxiv.org/html/2610.29823",agmd:"https://arxiv.org/html/2602.11988",khatri:"https://arxiv.org/html/2607.27250v1",mcm:"https://arxiv.org/abs/2605.10039",harm:"https://arxiv.org/html/2611.01700",htm:"https://arxiv.org/html/2608.15008v1",swecb:"https://arxiv.org/html/2602.08316v3",dream:"https://arxiv.org/abs/2608.20664",lme2:"https://xiaowu0162.github.io/longmemeval-v2/",convo:"https://arxiv.org/html/2511.10523v1",ccdoc:"https://code.claude.com/docs/en/memory"};
+const $=id=>document.getElementById(id);
+const f1=v=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("es-MX"):v.toLocaleString("es-MX",{maximumFractionDigits:2})):v;
+const lk=k=>`<a href="${SRC[k]}">fuente</a>`;
+function delta(d,dec=1){if(d==null||isNaN(d))return"";const s=(d>0?"+":"")+d.toFixed(dec);return `<span class="${d>0?"up":d<0?"dn":""}">${s}</span>`}
+// generic table: head = [label|n], rows = arrays; cell can be {v,cls}
+function T(id,head,rows,foot){
+  const h=head.map(x=>{const n=x.endsWith("#");return `<th${n?' class="n"':""}>${n?x.slice(0,-1):x}</th>`}).join("");
+  const num=head.map(x=>x.endsWith("#"));
+  const b=rows.map(r=>`<tr${r.avg?' class="avg"':""}>${(r.c||r).map((c,i)=>{const o=(c&&typeof c==="object")?c:{v:c};return `<td class="${num[i]?"n":""} ${o.cls||""}">${o.v==null?"—":f1(o.v)}</td>`}).join("")}</tr>`).join("");
+  $(id).innerHTML=`<thead><tr>${h}</tr></thead><tbody>${b}</tbody>`+(foot?`<tfoot><tr><td colspan="${head.length}" class="src">${foot}</td></tr></tfoot>`:"");
+}
+const hi=v=>({v,cls:"hi"});
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+
+/* ================= DECISIÓN ================= */
+const L=LOCAL, memCalls=L.own_calls+L.cross_calls, links=L.links.own+L.links.cross+L.links.dangling;
+const pct=(a,b,d=1)=>(a/b*100).toFixed(d)+" %";
+$("kpis").innerHTML=[
+ [pct(L.sessions_with_cross,L.sessions),`sesiones que leyeron memoria de otro proyecto (${L.sessions_with_cross} de ${L.sessions})`],
+ [pct(L.cross_calls,memCalls),`de las llamadas a memoria fueron a otro proyecto (${L.cross_calls} de ${f1(memCalls)})`],
+ [(L.unified_index_bytes/25000).toFixed(1)+"×",`el tope de 25 KB: un índice unificado pesaría ${f1(Math.round(L.unified_index_bytes/1000))} KB y ${f1(L.unified_index_lines)} líneas`],
+ [f1(L.start_ctx_median),"tokens de contexto al arrancar, mediana (6.3 % de una ventana de 1 millón)"],
+ [pct(L.links.cross,links),`de los enlaces [[ ]] apuntan a otro proyecto (${L.links.cross} de ${links}); ${L.links.dangling} no resuelven`],
+ [pct(L.mem_ever_read,L.mem_total),`de las memorias se abrieron al menos una vez (${L.mem_ever_read} de ${L.mem_total})`]
+].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join("");
+const NA=L.projects.find(p=>p.p==="proyecto-foco");
+const ok=(c,t)=>`<span class="t ${c?"b":"g"}">${c?"cumple: a favor de unificar":"no cumple"}</span>`;
+T("crit",["Criterio","Hoy#","Umbral para unificar#","Estado","Nota"],[
+ ["Sesiones con lectura cruzada",pct(L.sessions_with_cross,L.sessions),"> 25 %",ok(false),"Todas las carpetas, 34 días"],
+ ["Llamadas de memoria que van a otro proyecto",pct(L.cross_calls,memCalls),"> 10 %",ok(false),`${f1(L.own_calls)} propias contra ${L.cross_calls} cruzadas`],
+ ["Enlaces entre memorias de proyectos distintos",pct(L.links.cross,links),"> 5 %",ok(false),"Las memorias casi no se citan entre proyectos"],
+ ["Índice unificado cabe en lo que carga el harness",(L.unified_index_bytes/25000).toFixed(1)+"× el tope","≤ 1×",ok(false),"Se cargaría solo el 15.6 % del índice"],
+ ["Lectura cruzada dentro del proyecto foco",`${NA.cross_sessions} de ${NA.sessions} sesiones`,"> 25 % con n ≥ 20",`<span class="t w">muestra insuficiente</span>`,"El único cruce fue hacia un solo proyecto (4 llamadas)"],
+ ["Evidencia externa de que más memoria cargada mejora el acierto","−2.0 a +2.4 puntos","> +5 puntos",ok(false),"Archivos de contexto: costo +19 a +23 % (ETH, sep-2026)"],
+ ["Con Opus 5.5: producto de memoria contra archivos o sin memoria","−2 a +1.1 puntos","> +5 puntos",ok(false),"MemoryTax: Mem0 95 contra Claude Code 97. CoReMem: Mem0 39.6 contra 38.5 sin memoria"],
+ ["Con modelos vigentes: wiki consolidada + búsqueda contra solo búsqueda","+8 puntos (53 → 61 %)","> +5 puntos",ok(true),"Anthropic, 6-nov-2026; autorreportado, agentes con Opus 5"]
+]);
+const base=Math.min(...L.projects.filter(p=>p.sessions>=2).map(p=>p.start_med));
+T("proj",["Proyecto","Sesiones#","Memorias#","Índice KB#","Tope 25 KB","Arranque, tokens#","Sobre el mínimo#","Llamadas#","Sesiones con cruce#","Llamadas cruzadas#","Hacia","Leídas#"],
+ L.projects.map(p=>[p.p==="proyecto-foco"?hi(p.p):p.p,p.sessions,p.mem,(p.idx_bytes/1000).toFixed(1),p.idx_bytes>25000?'<span class="t b">excede</span>':p.idx_bytes>22000?'<span class="t w">al borde</span>':'<span class="t g">cabe</span>',p.start_med,"+"+f1(p.start_med-base),p.calls,p.cross_sessions,p.cross_calls,p.cross_targets.map(t=>t[0]).join(", ")||"—",p.mem?pct(p.mem_read,p.mem,0):"—"]),
+ "«Sobre el mínimo» = tokens de arranque menos el proyecto más ligero con al menos 2 sesiones. Un proyecto tiene 97 memorias y solo 3 sesiones en la ventana.");
+T("opts",["Opción","Índice siempre cargado#","Cabe en 25 KB","Lectura cruzada que cubre","Riesgo medido afuera"],[
+ [hi("A · Por proyecto (hoy)"),"0.3 a 31.3 KB según proyecto","35 de 37 carpetas","Ninguna; el agente busca a mano (7.7 % de sesiones)","—"],
+ ["B · Por proyecto + puente de punteros","A + cerca de 3 KB estimados (37 líneas, una por proyecto)","Sí","Dice dónde está cada cosa; el contenido sigue por proyecto","Bajo: +contexto fijo pequeño"],
+ ["C · Unificada","160 KB, 1,069 líneas","No: 6.4×","Toda","Costo +19 a +23 %, acierto −2.0 a +2.4 puntos; productos de memoria: 11 de 12 bajo la línea base"]
+]);
+
+/* ================= LENGUAJE NATURAL ================= */
+T("mab",["Sistema","Tipo","Recuperar#","Aprender#","Largo plazo#","Olvidar#","Promedio#"],[
+ ["GPT-4o, todo en contexto","Base",58.1,50.0,54.9,32.5,hi(48.8)],["GPT-4o-mini, todo en contexto","Base",49.2,48.6,46.2,25.0,42.2],["HippoRAG-v2","Memoria",65.1,35.8,36.2,29.5,41.6],["BM25","Base",60.5,44.5,35.6,25.5,41.5],["MIRIX (GPT-4.1-mini)","Memoria",63.0,35.7,40.5,11.5,37.7],["RAG con embeddings","Base",53.8,42.7,36.3,15.5,37.1],["MemGPT / Letta","Memoria",34.3,40.8,22.4,15.5,28.3],["Zep","Memoria",37.5,37.5,16.2,5.0,24.0],["GraphRAG","Memoria",40.9,24.8,19.9,8.0,23.4],["Mem0","Memoria",32.6,21.2,20.7,10.0,21.1],["Cognee","Memoria",28.3,22.8,16.0,15.5,20.6]],lk("mab"));
+T("ready",["Sistema","LoCoMo temporal, EM#","LoCoMo, F1#","Dato actualizado, SubEM#","Temporal, SubEM#","Latencia por operación, s#","Latencia total por consulta, s#"],[
+ [hi("Todo en contexto"),8.1,26.9,20.0,12.0,null,null],[hi("RAG con embeddings"),1.6,7.9,20.0,10.7,null,null],["Mem0",3.2,6.0,15.6,10.7,35.9,374.2],["MemoChat",2.4,15.4,8.9,10.7,15.4,460.2],["Cognee",4.0,28.1,37.8,18.7,116.5,null],["Zep",4.8,18.1,44.4,13.3,155.1,null],["MemTree",5.6,18.6,31.1,8.0,15.9,116.7],["Letta (MemGPT)",0.0,7.1,17.8,12.0,null,null],["LightMem",4.0,20.1,15.6,12.0,3.67,17.3],["SimpleMem",4.4,8.1,6.7,8.0,null,null],["MemOS",8.9,28.0,28.9,12.0,null,null],["MemoryOS",3.2,22.7,35.6,16.0,28.6,490.0],["A-MEM",4.8,17.7,26.7,8.0,17.9,552.1]],lk("ready")+" · Los resultados principales del estudio están en figuras; solo se extrajo esta tabla y las latencias citadas en el texto.");
+const AMA=[["AMA-Agent (de los autores)",.6238,.6145,.5305,.4719,.5722,8.50],["EMem",.4631,.4925,.4512,.3421,.4610,null],["MemoRAG",.4708,.5497,.4257,.3659,.4606,null],["HippoRAG2",.4579,.5080,.4403,.3538,.4480,12.10],["Embeddings Qwen3-4B",.4843,.4974,.3520,.3011,.4227,null],["BM25",.3301,.4264,.3450,.2498,.3436,null],["MemoryBank",.3231,.4100,.3006,.3332,.3397,null],["MemGPT",.3289,.4404,.2809,.2526,.3304,null],["GraphRAG",.3077,.3905,.3140,.2879,.3258,null],["A-mem",.3084,.3653,.3088,.2873,.3186,null],["Mem-alpha",.2876,.4172,.3064,.2171,.3117,null],["HiMem",.2945,.4018,.3126,.2238,.2995,null],["MemAgent",.2550,.3380,.2849,.2202,.2768,5.54],["Mem0",.2011,.2645,.2101,.1516,.2104,2.85],["SimpleMem",.2012,.1884,.1764,.1373,.1811,24.35],["Mem1",.1180,.1427,.1205,.1080,.1229,22.03]];
+T("ama",["Sistema","Recuperar#","Causal#","Estado que cambia#","Abstracción#","Promedio#","Latencia, s#"],[[hi("Qwen3-32B con todo en contexto (referencia)"),61.5,51.8,49.0,36.6,hi(51.8),null]].concat(AMA.map(r=>[r[0],...r.slice(1,6).map(x=>+(x*100).toFixed(1)),r[6]])),lk("ama")+" · Exactitud en %. El mismo modelo con todo el historial a la vista (51.8) supera a 15 de 16 sistemas.");
+const AR=[["GPT-5.1-mini","Contexto largo",.16,557.8],["GPT-4.1-mini","Contexto largo",.09,216.8],["Gemini-3-Flash","Contexto largo",.19,276.2],["Claude Sonnet 4.5","Contexto largo",.16,385.6],["Letta","Memoria",.14,698.4],["Mem0","Memoria",.13,706.4],["Mirix","Memoria",.13,622.6],["Mem0 grafo","Memoria",.12,792.0],["ReasoningBank","Memoria",.12,771.6],["BM25","RAG",.17,706.8],["RAG con embeddings","RAG",.20,506.4],["MemoRAG","RAG",.17,622.4],["GraphRAG","RAG",.17,573.8]];
+T("arena",["Método","Tipo","Éxito promedio, %#","Latencia por tarea, s#"],AR.sort((a,b)=>b[2]-a[2]).map(r=>[r[0],r[1],Math.round(r[2]*100),r[3]]),lk("arena")+" · Nadie pasa de 20 %. Los cinco sistemas de memoria (12 a 14 %) quedan bajo el mejor contexto largo (19 %) y el RAG con embeddings (20 %).");
+T("beam",["Sistema","100 mil#","500 mil#","1 millón#","10 millones#","Quién"],[["Hindsight",73.4,71.1,73.9,64.1,"propio"],["Honcho",63.0,64.9,63.1,40.6,"citado por Hindsight"],["Mem0 (2026)",null,null,64.1,48.6,"propio"],["LIGHT",35.8,35.9,33.6,26.6,"independiente"],["RAG simple",32.3,33.0,30.7,24.9,"independiente"],["Todo en contexto, mejor de 4",28,28,26,13,"independiente"]],lk("beam")+" · "+`<a href="${SRC.hindb}">Hindsight</a> · <a href="${SRC.mem0b}">Mem0</a>`);
+T("lme",["Sistema","Tipo","% correcto#","Quién"],[["Remis + Instruct","Memoria",86.5,"propio (Redis)"],["EmergenceMem","Memoria",86.0,"propio"],["Mastra, memoria observacional","Memoria",84.2,"propio; reproducido por Redis"],["Remis","Memoria",83.4,"propio (Redis)"],["Solo las sesiones correctas (techo)","Referencia",82.4,"Mastra"],["Supermemory","Memoria",81.6,"citado por Mastra y Redis"],["RAG simple, 20 resultados","Base",80.1,"Mastra"],["Zep","Memoria",71.2,"propio"],["AMS","Memoria",64.0,"propio (Redis)"],["RAG simple, 20 resultados","Base",61.5,"Redis"],["Todo en contexto","Base",60.2,"artículo de Zep"],["Zep","Memoria",48.0,"independiente (2606.24775), otro juez"]],`<a href="${SRC.mastra}">Mastra</a> · <a href="${SRC.redis}">Redis</a> · <a href="${SRC.zepp}">Zep</a> · <a href="${SRC.ready}">2606.24775</a>`);
+
+/* ================= CÓDIGO ================= */
+const VB=[["deepseek-v4-pro",67.1,67.1,50.3,47.6,[62.8,66.9,64.6,63.1]],["glm-5",55.0,57.4,77.1,66.2,[49.5,53.2,57.0,52.5]],["glm-5.2",76.8,80.4,68.2,61.0,null],["kimi-k2.7-code",69.8,74.3,56.0,53.8,[68.0,69.6,66.0,65.8]],["qwen3.8-max",79.1,80.2,52.9,50.6,null]];
+T("vibe",["Modelo","Memoria apagada#","Experiencia verificada#","Δ#","Pasos: apagada → verificada#","Mem0#","Δ#","SimpleMem#","Δ#","MemoryOS#","Δ#","A-MEM#","Δ#"],
+ VB.map(r=>[r[0],hi(r[1]),r[2],delta(r[2]-r[1]),r[3]+" → "+r[4],...(r[5]?r[5].flatMap(x=>[x,delta(x-r[1])]):Array(8).fill(null))]),lk("vibe")+" · 11 de 12 combinaciones con producto de memoria quedan bajo la línea base. Causa de 231 fallos: forma del recuerdo 160, cobertura 37, uso 31, orden 3.");
+const S4=[["Resumen correcto, dado a mano",34.34,6.66,.85],["Supermemory",30.30,5.04,.58],["OpenViking",29.20,4.20,.53],["Trayectoria completa correcta",27.27,5.95,.77],["Sin memoria (base)",26.26,6.37,.79],["El agente busca trayectorias",26.26,6.78,.98],["Mem0",24.24,4.72,.62],["El agente busca resúmenes",22.22,6.28,.91]];
+T("swe4",["Condición","% resuelto#","Δ contra base#","Minutos#","Dólares por tarea#"],S4.map(r=>[r[0].includes("base")?hi(r[0]):r[0],r[1],delta(r[1]-26.26,2),r[2],r[3]]),lk("swecb")+" · Acierto de recuperación: el agente por su cuenta 34 %, Mem0 39 %, OpenViking 52 %, Supermemory 60 %, LangMem 73 %.");
+T("dream",["Condición","Aprobadas de 180#","%#","Δ contra sin memoria#"],[[hi("Sin memoria externa"),21,11.7,""],["Memoria literal de eventos",82,45.6,delta(33.9)],["Referencia tipada + literal",83,46.1,delta(34.4)],["Mem0 alojado, guardado literal",97,53.9,delta(42.2)]],lk("dream")+" · Un solo autor. Las diferencias entre las tres memorias no son concluyentes.");
+const CA=[["GPT-5.5",74.3,2.3,4.417,84.3,31.0,2.970],["ChatGPT-5.6-Sol",79.0,2.7,4.277,78.7,18.3,3.483],["Claude Opus 4.8",88.0,24.3,2.800,90.0,60.3,2.113],["Claude Sonnet 4.6",76.0,6.3,3.970,83.7,14.0,3.380],["Gemini 3.5 Flash",79.3,17.0,3.663,81.7,38.7,2.927],["DeepSeek V4 Pro",76.3,15.3,4.087,79.0,17.7,3.667],["Kimi K2.6",77.0,22.3,3.710,82.0,32.3,3.083],["GLM-5.2",85.3,18.7,3.217,89.7,46.7,2.457],["Qwen3.7-Max",77.7,17.7,3.933,82.7,29.7,3.120],["Llama-3.3-70B",10.0,5.7,7.450,30.0,16.0,6.250],["Qwen3-8B",23.3,18.3,6.443,27.7,23.0,6.133],["Qwen3.5-27B",56.0,10.7,5.337,74.3,21.3,3.990]];
+T("capa",["Modelo","ES sin historial#","ES con historial#","Δ#","1.ª sin#","1.ª con#","Δ#","Turnos sin#","Turnos con#"],
+ CA.map(r=>[r[0],r[1],r[4],delta(r[4]-r[1]),r[2],r[5],delta(r[5]-r[2]),r[3],r[6]]).concat([{avg:1,c:["Promedio de 12 modelos",+mean(CA.map(r=>r[1])).toFixed(1),+mean(CA.map(r=>r[4])).toFixed(1),delta(mean(CA.map(r=>r[4]-r[1]))),+mean(CA.map(r=>r[2])).toFixed(1),+mean(CA.map(r=>r[5])).toFixed(1),delta(mean(CA.map(r=>r[5]-r[2]))),+mean(CA.map(r=>r[3])).toFixed(2),+mean(CA.map(r=>r[6])).toFixed(2)]}]),
+ lk("capa")+" · Con GPT-5.5, acierto al primer intento: historial completo 31.0, mem0 11.7, A-mem 29.3, historial filtrado 44.3.");
+T("lme2",["Método","Familia","Pequeño, %#","Latencia, s#","Mediano, %#","Latencia, s#"],[["Sin recuperación","Solo lector",1.3,0,1.3,0],["RAG","RAG",42.8,0.1,38.1,0.1],["RAG + notas","RAG",51.0,0.2,45.9,0.3],["AgentRunbook-R","RAG",58.6,26.9,57.0,25.8],["Codex sobre archivos","Agente de código",69.9,177.2,68.7,185.8],[hi("AgentRunbook-C: archivos, manifiestos y documentos de flujo"),"Agente de código",hi(74.9),108.3,hi(70.1),139.9]],lk("lme2"));
+T("ctxf",["Estudio","Harness / modelo","Sin archivo#","Archivo generado#","Archivo escrito a mano#","Costo: sin → con#"],[
+ ["ETH · SWE-bench Lite, 300 tareas","Claude Code / Sonnet 4.5",59.9,58.7,null,null],["ETH · SWE-bench Lite","Codex / GPT-5.2",56.6,54.4,null,null],["ETH · SWE-bench Lite","Codex / GPT-5.1-mini",47.7,47.6,null,null],["ETH · SWE-bench Lite","Qwen Code / Qwen3-30B",31.1,32.4,null,null],
+ ["ETH · CTXbench, 138 tareas","Sonnet 4.5",73.2,65.2,70.3,"$1.15 → $1.30"],["ETH · CTXbench","GPT-5.2",65.2,68.1,68.1,"$0.38 → $0.54"],["ETH · CTXbench","GPT-5.1-mini",54.3,50.7,55.8,"$0.18 → $0.19"],["ETH · CTXbench","Qwen3-30B",45.7,47.1,53.6,"$0.13 → $0.15"],
+ ["Khatri · 288 corridas, 3 repositorios","Claude Code / Sonnet 4.6",53.3,55.6,"55.6 (selectivo)","p = 1.0"],["Khatri","Codex CLI / GPT-5.5",58.8,56.9,"52.9 (selectivo)","p = 0.66"]],
+ `<a href="${SRC.agmd}">ETH, v3 de sep-2026</a>: archivo generado −0.5 y −2 puntos, costo +20 % y +23 %; escrito a mano +2.4 puntos (p = 0.21), costo hasta +19 %. · <a href="${SRC.khatri}">Khatri, jul-2026</a> · <a href="${SRC.mcm}">McMillan, may-2026</a>: en 1,650 sesiones de Claude Code, el tamaño y la posición del archivo no tuvieron efecto detectable en el cumplimiento.`);
+
+/* ================= HARNESS ================= */
+const SC_H=["CC sin memoria","CC nativa","CC + Mem0","CC + Hindsight","CC + GBrain","Hermes sin memoria","Hermes nativa","Hermes + Mem0","Hermes + Hindsight","Codex nativa"];
+const SC=[["Haiku-4.5",[40.2,46.0,69.7,58.7,56.7,43.6,59.8,61.9,61.0,44.8],[34,38,77,67,99,78,242,270,256,42]],["Sonnet-5",[43.9,51.2,57.5,50.9,62.1,43.1,47.4,59.0,50.3,56.7],[51,67,159,104,179,76,197,442,310,70]],["Opus-4.6",[48.8,65.0,66.5,71.1,74.0,46.5,68.5,65.0,66.8,51.5],[45,57,122,100,107,59,148,252,203,31]],["Opus-4.8",[48.6,60.4,66.8,74.0,67.6,45.4,64.2,64.7,61.9,48.6],[41,42,176,109,144,65,166,209,198,34]],["Gemini-3.7F",[63.9,79.2,79.2,81.8,79.5,73.4,77.8,79.5,80.1,73.4],[227,155,349,228,295,317,588,625,528,322]],["GPT-5.4",[40.5,50.3,56.4,53.2,53.8,41.0,53.8,68.8,57.8,40.8],[30,33,67,63,89,41,95,130,118,16]],["GLM-5.3F",[46.8,65.0,66.8,65.9,66.2,47.1,60.4,67.3,64.5,60.4],[null,null,null,null,null,74,213,436,250,108]],["Qwen3.8-FN",[49.7,69.7,69.4,66.8,74.3,52.9,71.4,63.3,68.2,70.8],[null,null,null,null,null,56,202,221,179,503]],["DS-Vision",[45.4,54.6,66.8,63.0,59.0,50.0,69.1,63.0,62.1,53.5],[null,null,null,null,null,62,148,189,149,52]],["DS-V4.1",[52.0,64.2,74.3,74.3,74.9,59.3,74.0,74.6,68.8,73.7],[null,null,null,null,null,83,171,236,251,57]]];
+const cell=(a,t)=>a+(t!=null?` <span class="src">(${t})</span>`:"");
+T("sclate",["Modelo",...SC_H.map(h=>h+"#")],SC.map(r=>[r[0],...r[1].map((a,i)=>({v:cell(a,r[2][i]),cls:i===1?"hi":""}))]).concat([{avg:1,c:["Promedio de 10 modelos",...SC_H.map((h,i)=>({v:mean(SC.map(r=>r[1][i])).toFixed(1),cls:i===1?"hi":""}))]}]),lk("sclate")+" · CC = Claude Code.");
+const six=SC.slice(0,6), av=i=>mean(SC.map(r=>r[1][i])), tk=i=>mean(six.map(r=>r[2][i]));
+T("sclate2",["Resumen","% aprobado, 10 modelos#","Δ contra sin memoria#","Tokens, M (6 modelos)#","× tokens contra sin memoria#","Puntos ganados por cada × de tokens#"],
+ [[0,0],[1,0],[2,0],[3,0],[4,0],[5,5],[6,5],[7,5],[8,5]].map(([i,b])=>{const d=av(i)-av(b),x=tk(i)/tk(b);return [i===1?hi(SC_H[i]):SC_H[i],+av(i).toFixed(1),i===b?"":delta(d),Math.round(tk(i)),i===b?"1.0":x.toFixed(2),i===b?"":(d/x).toFixed(1)]}),
+ "Calculado aquí a partir de la tabla anterior. Los tokens de Claude Code solo están publicados para 6 de los 10 modelos.");
+const TX=[["Todo en contexto",74,.0028,92,.0019,95,.117,"—"],["BM25",74,.00028,82,.00021,90,.013,"—"],["Mem0",78,.0013,80,.0011,95,.074,"$25.88"],["Zep",43,.00012,51,.00012,87,.0077,"$6.22"],["Pi (harness + archivos)",63,.016,91,.0032,99,.046,"—"],["Codex",28,.0031,88,.0050,98,.167,"—"],["Claude Code",29,.0020,91,.0082,97,.187,"—"]];
+T("tax",["Método","GPT-4o-mini, %#","$#","GPT-6 Luna, %#","$#","Claude Opus 5.5, %#","$#","Costo de construir la memoria#"],TX.map(r=>[r[0],r[1],r[2],r[3],r[4],r[0].startsWith("Pi")?hi(r[5]):r[5],r[6],r[7]]),lk("tax")+" · Mem0 se paga solo a partir de 372, 545 y 596 preguntas. Con modelo débil los harness sobre archivos caen a 28–63 %; con modelo fuerte llegan a 97–99 %.");
+const S3=[["Claude Sonnet 4.5","Claude Code",19.68,23.40,1701548,1352830,.67,.55],["GPT-5.3 Codex","Codex",22.60,23.94,858253,718920,.31,.27],["Qwen3.5-plus","Qwen Code",16.22,21.54,2332845,1668167,.33,.18],["GLM-5","Qwen Code",18.35,19.41,1933888,1671708,.58,.48],["MiniMax 2.7","Claude Code",19.68,22.07,1615255,1229220,.65,.46]];
+T("swe3",["Modelo","Harness","% sin experiencia#","% con resumen correcto#","Δ#","Tokens: sin → con#","Δ tokens#","Costo: sin → con#"],S3.map(r=>[r[0],r[1],r[2],r[3],delta(r[3]-r[2],2),f1(Math.round(r[4]/1000))+"k → "+f1(Math.round(r[5]/1000))+"k",((r[5]/r[4]-1)*100).toFixed(0)+" %","$"+r[6]+" → $"+r[7]]),lk("swecb"));
+T("harm",["Harness","Modelo","Inyección indirecta, % de éxito del ataque#","Inyección directa#"],[["OpenClaw","GPT-5",75.00,88.10],["OpenClaw","Gemini-2.5-Flash",76.39,90.00],["Claude Code","GPT-5",62.50,81.82],["Claude Code","Gemini-2.5-Flash",59.38,75.00]],lk("harm")+" · 288 casos. Una memoria que comparte todo entre proyectos amplía el alcance de una nota envenenada.");
+
+/* ================= MODELOS ================= */
+T("reader",["Sistema","Benchmark","Modelo lector","%#","Rango#","Fuente"],[
+ ["Mastra, memoria observacional","LongMemEval","gpt-4o",84.23,"",lk("mastra")],["","","gemini-3-pro",93.27,"",""],["","","gpt-5-mini",94.87,hi("10.6"),""],
+ ["Hindsight","LongMemEval","abierto de 20B",83.6,"",lk("hind")],["","","abierto de 120B",89.0,"",""],["","","gemini-3-pro",91.4,hi("7.8"),""],
+ ["Zep","LongMemEval","gpt-4o-mini",63.8,"",lk("zepp")],["","","gpt-4o",71.2,hi("7.4"),""],
+ ["Supermemory","LongMemEval","gpt-4o",81.6,"",lk("mastra")],["","","gpt-5",84.6,"",""],["","","gemini-3-pro",85.2,hi("3.6"),""],
+ ["Claude Code sobre archivos","LoCoMo, MemoryTax","GPT-4o-mini",29,"",lk("tax")],["","","GPT-6 Luna",91,"",""],["","","Claude Opus 5.5",97,hi("68"),""],
+ ["Mem0","LoCoMo, MemoryTax","GPT-4o-mini",78,"",lk("tax")],["","","GPT-6 Luna",80,"",""],["","","Claude Opus 5.5",95,hi("17"),""],
+ ["Claude Code, memoria nativa","SCLATE","Haiku-4.5",46.0,"",lk("sclate")],["","","Opus-4.6",65.0,"",""],["","","Gemini-3.7F",79.2,hi("33.2"),""],
+ ["MemOS","LoCoMo F1, 4 modelos","peor",32.2,"",lk("ready")],["","","mejor",41.2,hi("9.0"),""]],
+ "«Rango» = diferencia entre el mejor y el peor modelo con el mismo sistema. Con archivos, el modelo pesa más que con un producto de memoria.");
+const CBF=[["gpt-5.2-codex-xhigh",93,44.46],["gpt-5.4-xhigh",89,43.52],["claude-sonnet-4-6",88,116.09],["gpt-5.2-xhigh",87,76.72],["gpt-5.3-codex-xhigh",85,40.83],["claude-opus-4-6",84,268.44],["gemini-3-flash",82,37.80],["gemini-3.1",79,97.68],["gpt-5-mini-high",67,35.93],["claude-opus-4-5",63,567.66],["kimi-k2.5",57,27.36],["claude-sonnet-4-5",48,405.01],["claude-haiku-4-5",43,117.55],["glm-5",39,85.87],["minimax-m2.5",37,50.28]];
+const CBS={"gpt-5.2 xhigh":[85.31,63.12],"claude-opus-4-6":[81.32,62.64],"claude-sonnet-4-6":[79.08,64.8],"claude-sonnet-4-5":[76.5,72],"claude-opus-4-5":[75.54,68.82],"gemini-3-pro":[72.73,64.29],"gpt-5":[70.2,51.4],"claude-haiku-4-5":[69.7,57.3],"gpt-5-mini":[68.8,45.5],"gpt-5.1-codex":[64.84,55.73],"gemini-3-flash":[59.54,59.54],"gpt-4.1":[36.1,31.3]};
+T("cbench",["Modelo","Archivos, %#","Costo de la corrida, $#","$ por punto#","Habilidades: tarea completa, %#","Habilidades: usó la correcta, %#"],CBF.map(r=>{const s=CBS[r[0]]||CBS[r[0].replace("-xhigh"," xhigh")]||[];return [r[0],r[1],r[2],(r[2]/r[1]).toFixed(2),s[0],s[1]]}).concat(Object.entries(CBS).filter(([k])=>!CBF.some(r=>r[0]===k||r[0].replace("-xhigh"," xhigh")===k)).map(([k,s])=>[k,null,null,null,s[0],s[1]])),lk("cb")+" · No incluye los modelos de la segunda mitad de 2026.");
+T("amalc",["Modelo","Recuperar#","Causal#","Estado que cambia#","Abstracción#","Promedio#"],[["GPT 5.2",77.4,80.5,65.6,60.4,hi(72.3)],["GPT-5-mini",69.5,71.6,65.8,62.4,67.8],["Qwen3-32B",61.5,51.8,49.0,36.6,51.8],["Gemini 2.5 Flash",58.3,50.9,50.0,42.0,51.7],["Qwen3-14B",56.8,44.3,45.0,31.8,46.6],["Qwen2.5-14B-1M",55.7,41.1,47.3,33.7,46.4],["Claude Haiku 3.5",49.4,45.1,42.9,30.9,43.6],["Qwen3-8B",50.2,37.8,39.9,29.2,41.1]],lk("ama")+" · Rango entre modelos: 31.2 puntos. Rango entre 16 sistemas de memoria con el mismo modelo: 44.9 puntos.");
+
+/* ================= RESTRICCIONES ================= */
+T("hlim",["Harness","Archivos de instrucciones","Tope de lo siempre cargado","Alcance de la memoria","Memoria global nativa","Memoria automática"],[
+ [hi("Claude Code"),"CLAUDE.md por niveles, <code>.claude/rules/</code>; AGENTS.md si no hay CLAUDE.md","MEMORY.md: 200 líneas o 25 KB. CLAUDE.md: sin tope, objetivo 200 líneas","Por repositorio, local a la máquina","Instrucciones sí (<code>~/.claude/CLAUDE.md</code>); memorias no","Activada"],
+ ["Codex CLI","AGENTS.override.md, AGENTS.md; global en <code>~/.codex</code>","32 KiB entre todos los archivos","Global y por proyecto","Sí, memorias bajo <code>~/.codex</code>","Apagada"],
+ ["Cursor","<code>.cursor/rules</code>, reglas de usuario y de equipo, AGENTS.md","Sin tope; recomienda 500 líneas por regla","Proyecto, usuario, equipo","Reglas de usuario","No verificado"],
+ ["Gemini CLI","GEMINI.md global, de proyecto y por carpeta","Sin tope declarado; todo se concatena","Global y por proyecto","Sí","Apagada, experimental"],
+ ["OpenCode","AGENTS.md; CLAUDE.md como respaldo","Sin tope declarado","Global y por proyecto","Solo instrucciones","No tiene"],
+ ["Hermes","SOUL.md y un archivo de proyecto","MEMORY.md 2,200 caracteres; USER.md 1,375; escribir de más da error","Por perfil, no por proyecto","Sí: toda la memoria es global","Activada en la configuración de ejemplo"],
+ ["OpenClaw","AGENTS.md, SOUL.md, USER.md, MEMORY.md","20,000 caracteres por archivo; 60,000 en total","Por espacio de trabajo del agente","No documentada","Activada"],
+ ["Letta Code","No verificado","5 MiB (gratis) o 50 MiB (Pro) por repositorio de memoria","Por agente","Sigue al agente entre proyectos","Activada"]],
+ "Cuatro de ocho son globales por diseño (Codex, Gemini, Hermes, Letta); Claude Code y OpenClaw separan por proyecto. "+lk("ccdoc"));
+T("mlim",["Proveedor","Modelos","Ventana de contexto, tokens#","Salida máxima#","Arranque mediano medido como % de la ventana#"],[
+ ["Anthropic","Claude Fable 5.2, Opus 5.5, Sonnet 5.5, Haiku 5.5","1,000,000","128,000",pct(L.start_ctx_median,1e6)],["OpenAI","GPT-6.2 Astra, GPT-6.2 Sol, GPT-6.1 Terra, GPT-6 Luna","1,050,000","128,000",pct(L.start_ctx_median,1.05e6)],["Google","Gemini 4 Carbon, Argon, Hydrogen","1,048,576","65,536 (hasta 1,048,576)",pct(L.start_ctx_median,1048576)]],
+ `Contexto máximo por sesión medido, mediana: ${f1(L.peak_ctx_median)} tokens (${pct(L.peak_ctx_median,1e6)} de la ventana).`);
+T("cost",["Qué","Valor#","Contexto","Fuente"],[
+ ["Archivo de contexto siempre cargado","+19 a +23 % de costo","Acierto −2.0 a +2.4 puntos",lk("agmd")],
+ ["Claude Code + Mem0 contra memoria nativa",(tk(2)/tk(1)).toFixed(1)+"× tokens","+"+(av(2)-av(1)).toFixed(1)+" puntos (SCLATE)",lk("sclate")],
+ ["Claude Code nativa contra sin memoria",(tk(1)/tk(0)).toFixed(2)+"× tokens","+"+(av(1)-av(0)).toFixed(1)+" puntos (SCLATE)",lk("sclate")],
+ ["Hermes nativa (global) contra sin memoria",(tk(6)/tk(5)).toFixed(1)+"× tokens","+"+(av(6)-av(5)).toFixed(1)+" puntos (SCLATE)",lk("sclate")],
+ ["Construir la memoria de Mem0, una conversación","$25.88","Se paga a partir de 372 a 596 preguntas",lk("tax")],
+ ["Pregunta con Claude Code sobre archivos, Opus 5.5","$0.187","BM25 $0.013 · Mem0 $0.074 · Zep $0.0077",lk("tax")],
+ ["Resumen correcto de experiencia previa","−20 % de tokens","Claude Code, +3.7 puntos",lk("swecb")],
+ ["Consulta a memoria en archivos con agente","108 a 186 s","RAG simple 0.1 a 0.3 s (LongMemEval-V2)",lk("lme2")],
+ ["Latencia por operación de memoria","3.7 a 155 s","LightMem 3.67 · Mem0 35.9 · Cognee 116.5 · Zep 155.1",lk("ready")],
+ ["Mem0 contra todo en contexto","hasta 95× más barato","Con 30 a 45 % de acierto en preferencias",lk("convo")],
+ ["El índice más pesado medido","31.3 KB","El proyecto con más sesiones: +"+f1(L.projects[0].start_med-base)+" tokens de arranque sobre el mínimo","medido aquí"]]);
+
+/* ================= EXPLORADOR ================= */
+// cats | bench | sistema | harness | modelo | métrica | valor | quién (i/p/c) | fecha | fuente
+const R=[];
+const add=(c,b,s,h,m,k,v,w,d,src)=>{if(v!=null)R.push({c,b,s,h:h||"—",m:m||"—",k,v,w,d,src})};
+`n|MemoryAgentBench|GPT-4o todo en contexto||gpt-4o|promedio|48.8|i|2025-07|mab
+n|MemoryAgentBench|GPT-4o-mini todo en contexto||gpt-4o-mini|promedio|42.2|i|2025-07|mab
+n|MemoryAgentBench|HippoRAG-v2||gpt-4o-mini|promedio|41.6|i|2025-07|mab
+n|MemoryAgentBench|BM25||gpt-4o-mini|promedio|41.5|i|2025-07|mab
+n|MemoryAgentBench|MIRIX||gpt-4.1-mini|promedio|37.7|i|2025-07|mab
+n|MemoryAgentBench|RAG embeddings||gpt-4o-mini|promedio|37.1|i|2025-07|mab
+n|MemoryAgentBench|MemGPT / Letta||gpt-4o-mini|promedio|28.3|i|2025-07|mab
+n|MemoryAgentBench|Zep||gpt-4o-mini|promedio|24.0|i|2025-07|mab
+n|MemoryAgentBench|GraphRAG||gpt-4o-mini|promedio|23.4|i|2025-07|mab
+n|MemoryAgentBench|Mem0||gpt-4o-mini|promedio|21.1|i|2025-07|mab
+n|MemoryAgentBench|Cognee||gpt-4o-mini|promedio|20.6|i|2025-07|mab
+n|LoCoMo|Todo en contexto||gpt-4o-mini|% juez|72.90|c|2025-04|mem0p
+n|LoCoMo|Mem0 grafo||gpt-4o-mini|% juez|68.44|p|2025-04|mem0p
+n|LoCoMo|Mem0||gpt-4o-mini|% juez|66.88|p|2025-04|mem0p
+n|LoCoMo|Zep||gpt-4o-mini|% juez|65.99|c|2025-04|mem0p
+n|LoCoMo|RAG mejor configuración||gpt-4o-mini|% juez|60.97|c|2025-04|mem0p
+n|LoCoMo|LangMem||gpt-4o-mini|% juez|58.10|c|2025-04|mem0p
+n|LoCoMo|Memoria de OpenAI||gpt-4o-mini|% juez|52.90|c|2025-04|mem0p
+n|LoCoMo|A-MEM||gpt-4o-mini|% juez|48.38|c|2025-04|mem0p
+n|LoCoMo|Zep, recorrido por Mem0|||% juez|58.44|c|2025-05|zepi
+n|LoCoMo|Zep, corregido|||% juez|75.14|p|2025-05|zepi
+n|LoCoMo|Letta, agente con archivos||gpt-4o-mini|% juez|74.0|p|2025-08|letta
+n|LoCoMo|Mem0, algoritmo 2026|||% juez|92.5|p|2026-04|mem0b
+n|LoCoMo|Hindsight||modelo grande|% juez|89.61|p|2025-12|hind
+n|LoCoMo|EverMemOS||gpt-4.1-mini|% juez|92.32|p|2026|audit
+n|LoCoMo|EverMemOS, reproducción||gpt-4.1-mini|% juez|38.38|i|2026|audit
+n|LoCoMo|Todo en contexto + buena instrucción||gpt-4.1-mini|% juez|92.62|i|2026|audit
+n|LoCoMo|MemPalace híbrido|||recuperación@10|88.9|p|2026-04|mp
+n|LoCoMo|MemPalace sin reordenar|||recuperación@10|60.3|p|2026-04|mp
+n|LoCoMo|GPT-4o todo en contexto||gpt-4o|% juez|62.99|i|2026-02|lplus
+n|LoCoMo|A-Mem||gpt-4o|% juez|59.64|i|2026-02|lplus
+n|LoCoMo|Mem0||gpt-4o|% juez|57.24|i|2026-02|lplus
+n|LoCoMo-Plus|Gemini-2.5-pro todo en contexto||gemini-2.5-pro|% juez|26.06|i|2026-02|lplus
+n|LoCoMo-Plus|GPT-4o todo en contexto||gpt-4o|% juez|21.05|i|2026-02|lplus
+n|LoCoMo-Plus|A-Mem||gpt-4o|% juez|17.20|i|2026-02|lplus
+n|LoCoMo-Plus|Mem0||gpt-4o|% juez|15.80|i|2026-02|lplus
+n|LoCoMo-Plus|RAG embeddings||gpt-4o|% juez|15.55|i|2026-02|lplus
+n|LongMemEval|Mem0, algoritmo 2026|||% correcto|94.4|p|2026-04|mem0b
+n|LongMemEval|Mem0 alojado, medido por rival||gpt-5|% correcto|73.8|c|2026|dev
+n|LongMemEval|Mem0 alojado, antes de abril||gpt-5|% correcto|57.5|c|2026|dev
+n|LongMemEval|Oracle Agent Memory||gpt-5.5|% correcto|93.8|p|2026|redis
+n|LongMemEval|Oracle Agent Memory, reproducido||gpt-5.5|% correcto|86.0|c|2026|redis
+n|LongMemEval|Amazon Bedrock AgentCore, reproducido|||% correcto|77.0|c|2026|redis
+n|LongMemEval|Google Vertex Memory Bank, reproducido||gpt-4o|% correcto|42.4|c|2026|redis
+n|LongMemEval|Hindsight, base sin memoria||abierto 20B|% correcto|39|p|2025-12|hind
+n|LongMemEval|MemPalace, ChromaDB sin palacio|||recuperación@5|96.6|p|2026-04|mp
+n|LongMemEval|MemPalace, con cuartos|||recuperación@5|89.4|c|2026-04|mp
+n|LongMemEval|MemPalace, compresión AAAK|||recuperación@5|84.2|c|2026-04|mp
+n|LongMemEval|Zep||gpt-4o|% juez|48.0|i|2026-06|ready
+c|Harness the Memory|Qwen3-8B sin memoria → mejor memoria||qwen3-8b|pass@1|15.5|i|2026-08|htm
+c|Harness the Memory|Qwen3-32B sin memoria (17.6) → mejor||qwen3-32b|pass@1|19.6|i|2026-08|htm
+c|Harness the Memory|Gemma-4 sin memoria (14.2) → mejor||gemma-4|pass@1|20.9|i|2026-08|htm`.split("\n").forEach(l=>{const a=l.split("|");add(a[0],a[1],a[2],a[3],a[4],a[5],+a[6],a[7],a[8],a[9])});
+[["Remis + Instruct",86.5,"p","redis"],["EmergenceMem",86.0,"p","mastra"],["Mastra memoria observacional",84.23,"p","mastra"],["Remis",83.4,"p","redis"],["Supermemory",81.6,"c","mastra"],["RAG simple (Mastra)",80.05,"p","mastra"],["Zep",71.2,"p","zepp"],["AMS",64.0,"p","redis"],["RAG simple (Redis)",61.5,"c","redis"],["Todo en contexto",60.2,"p","zepp"]].forEach(r=>add("n","LongMemEval",r[0],"","gpt-4o","% correcto",r[1],r[2],"2025–2026",r[3]));
+[["Mastra memoria observacional","gemini-3-pro",93.27,"mastra"],["Mastra memoria observacional","gpt-5-mini",94.87,"mastra"],["Hindsight","abierto 20B",83.6,"hind"],["Hindsight","abierto 120B",89.0,"hind"],["Hindsight","gemini-3-pro",91.4,"hind"],["Zep","gpt-4o-mini",63.8,"zepp"],["Supermemory","gpt-5",84.6,"mastra"],["Supermemory","gemini-3-pro",85.2,"mastra"]].forEach(r=>add("nm","LongMemEval",r[0],"",r[1],"% correcto",r[2],"p","2025–2026",r[3]));
+[["Hindsight",[73.4,71.1,73.9,64.1],"p","hindb"],["Honcho",[63.0,64.9,63.1,40.6],"p","hindb"],["Mem0 2026",[null,null,64.1,48.6],"p","mem0b"],["LIGHT",[35.8,35.9,33.6,26.6],"i","beam"],["RAG simple",[32.3,33.0,30.7,24.9],"i","beam"]].forEach(r=>["100 mil","500 mil","1 millón","10 millones"].forEach((s,i)=>add("n","BEAM",r[0],"","","puntaje a "+s,r[1][i],r[2],"2025–2026",r[3])));
+AMA.forEach(r=>add("n","AMA-Bench",r[0],"","qwen3-32b","% exactitud",+(r[5]*100).toFixed(1),r[0].startsWith("AMA")?"p":"i","2026-05","ama"));
+AR.forEach(r=>add("n","MemoryArena",r[0]+" ("+r[1]+")","","gpt-5.1-mini","% éxito",Math.round(r[2]*100),"i","2026-09","arena"));
+VB.forEach(r=>{add("cm","VibeMemBench","Memoria apagada","",r[0],"% resuelto",r[1],"i","2026-09","vibe");add("cm","VibeMemBench","Experiencia verificada","",r[0],"% resuelto",r[2],"i","2026-09","vibe");if(r[5])["Mem0","SimpleMem","MemoryOS","A-MEM"].forEach((s,i)=>add("cm","VibeMemBench",s,"",r[0],"% resuelto",r[5][i],"i","2026-09","vibe"))});
+S4.forEach(r=>add("c","SWE-ContextBench Lite",r[0],"Claude Code","claude-sonnet-4.5","% resuelto",r[1],"i","2026-05","swecb"));
+S3.forEach(r=>{add("chm","SWE-ContextBench","Sin experiencia",r[1],r[0],"% resuelto",r[2],"i","2026-05","swecb");add("chm","SWE-ContextBench","Resumen correcto",r[1],r[0],"% resuelto",r[3],"i","2026-05","swecb")});
+[["Sin memoria externa",11.7],["Memoria literal de eventos",45.6],["Referencia tipada + literal",46.1],["Mem0 alojado literal",53.9]].forEach(r=>add("c","DreamBench-SWE",r[0],"","","% aprobado",r[1],"i","2026-08","dream"));
+CA.forEach(r=>{add("cm","CAPA","Sin historial","",r[0],"% corre",r[1],"i","2026-07","capa");add("cm","CAPA","Con historial del usuario","",r[0],"% corre",r[4],"i","2026-07","capa");add("cm","CAPA","Sin historial","",r[0],"% al primer intento",r[2],"i","2026-07","capa");add("cm","CAPA","Con historial del usuario","",r[0],"% al primer intento",r[5],"i","2026-07","capa")});
+[["Sin recuperación","",1.3],["RAG","",42.8],["RAG + notas","",51.0],["AgentRunbook-R","",58.6],["Codex sobre archivos","Codex",69.9],["AgentRunbook-C (archivos)","agente de código",74.9]].forEach(r=>add("ch","LongMemEval-V2",r[0],r[1],"","% correcto, pequeño",r[2],"i","2026","lme2"));
+SC.forEach(r=>r[1].forEach((v,i)=>add("hm","SCLATE",SC_H[i].replace(/^CC |^Hermes |^Codex /,"").replace(/^\+ /,"+ "),SC_H[i].startsWith("CC")?"Claude Code":SC_H[i].startsWith("Hermes")?"Hermes":"Codex",r[0],"% aprobado",v,"i","2026-09","sclate")));
+TX.forEach(r=>[["gpt-4o-mini",1],["gpt-6-luna",3],["claude-opus-5.5",5]].forEach(([m,i])=>add("nhm","MemoryTax (LoCoMo)",r[0],/Pi|Codex|Claude/.test(r[0])?r[0]:"",m,"% acierto",r[i],"i","2026-10","tax")));
+[["Claude Code","claude-sonnet-4.5",59.9,58.7],["Codex","gpt-5.2",56.6,54.4],["Codex","gpt-5.1-mini",47.7,47.6],["Qwen Code","qwen3-30b",31.1,32.4]].forEach(r=>{add("chm","SWE-bench Lite + AGENTS.md","Sin archivo de contexto",r[0],r[1],"% resuelto",r[2],"i","2026-09","agmd");add("chm","SWE-bench Lite + AGENTS.md","Archivo generado",r[0],r[1],"% resuelto",r[3],"i","2026-09","agmd")});
+[["claude-sonnet-4.5",73.2,65.2,70.3],["gpt-5.2",65.2,68.1,68.1],["gpt-5.1-mini",54.3,50.7,55.8],["qwen3-30b",45.7,47.1,53.6]].forEach(r=>["Sin archivo de contexto","Archivo generado","Archivo escrito a mano"].forEach((s,i)=>add("cm","CTXbench",s,"",r[0],"% resuelto",r[i+1],"i","2026-09","agmd")));
+[["Claude Code","claude-sonnet-4-6",[53.3,55.6,55.6]],["Codex CLI","gpt-5.5",[58.8,56.9,52.9]]].forEach(r=>["Sin archivo de contexto","Archivo siempre cargado","Archivo selectivo"].forEach((s,i)=>add("chm","Khatri, archivos de contexto",s,r[0],r[1],"% resuelto",r[2][i],"i","2026-07","khatri")));
+[["OpenClaw","gpt-5",75.00],["OpenClaw","gemini-2.5-flash",76.39],["Claude Code","gpt-5",62.50],["Claude Code","gemini-2.5-flash",59.38]].forEach(r=>add("h","MemHarmBench","Inyección indirecta por memoria",r[0],r[1],"% éxito del ataque",r[2],"i","2026-11","harm"));
+CBF.forEach(r=>add("m","Context-Bench archivos","—","Letta",r[0],"% rúbrica",r[1],"p","2026-03","cb"));
+Object.entries(CBS).forEach(([k,s])=>add("m","Context-Bench habilidades","—","Letta",k,"% tarea completa",s[0],"p","2026-03","cb"));
+
+/* ================= MODELOS DE HOY ================= */
+const yes=s=>`<span class="t g">sí</span> ${s}`, no=`<span class="t b">ninguna</span>`;
+T("h_cov",["Modelo","Lanzamiento","Evaluación con memoria","Solo contexto largo u horizonte largo"],[
+ ["Claude Fable 5.2","09-nov-2026",yes("FrontierMemory (como escritor de memoria)"),"ProgramBench, ARC-AGI-3, Vending-Bench 2"],
+ ["Claude Mythos 5.2","09-nov-2026",no,"—"],
+ ["Claude Opus 5.5","22-sep-2026",yes("MemoryTax, CoReMem, CL-Bench, compactación, FrontierMemory, BEAM (Mastra)"),"ProgramBench, GraphWalks, Vending-Bench 2"],
+ ["Claude Sonnet 5.5","28-sep-2026",yes("CL-Bench, compactación, Mem0 BYOK"),"ProgramBench, Vending-Bench 2"],
+ ["Claude Haiku 5.5","07-oct-2026",yes("FrontierMemory, Mem0 BYOK"),"ProgramBench, Vending-Bench 2"],
+ ["GPT-6.2 Astra","17-nov-2026 (hoy)",no,"Terminal-Bench 4.0"],
+ ["GPT-6.2 Sol","17-nov-2026 (hoy)",no,"Terminal-Bench 4.0"],
+ ["GPT-6.1 Terra","26-oct-2026",yes("FrontierMemory"),"Vending-Bench 2"],
+ ["GPT-6.1 Sol","29-sep-2026",yes("FrontierMemory"),"ARC-AGI-3, Vending-Bench 2"],
+ ["GPT-6 Luna","22-sep-2026",yes("MemoryTax, FrontierMemory, Mem0 BYOK"),"—"],
+ ["GPT-6 Sol","22-sep-2026",yes("FrontierMemory (ejecutor)"),"Vending-Bench 2"],
+ ["GPT-6 Astra","03-sep-2026",yes("compactación"),"GraphWalks, ARC-AGI-3, Vending-Bench 2"],
+ ["Gemini 4 Carbon","10-nov-2026",yes("FrontierMemory"),"GraphWalks, Vending-Bench 2"],
+ ["Gemini 4 Argon","13-oct-2026",yes("FrontierMemory"),"GraphWalks, Vending-Bench 2"],
+ ["Gemini 4 Hydrogen","12-nov-2026",yes("FrontierMemory"),"Vending-Bench 2"],
+ ["Qwen 3.8 / Qwen4","sep-2026",yes("BEAM-1M y LongMemEval-M (27B), FrontierMemory (Qwen4 Max)"),"—"],
+ ["DeepSeek V4.1 Flash","17-oct-2026",yes("FrontierMemory, Mem0 BYOK"),"—"],
+ ["GLM-5.3","14-ago-2026",yes("FrontierMemory, Mem0 BYOK"),"—"],
+ ["Kimi K3 / K3.1 Pro","24-oct-2026 (K3.1)",yes("FrontierMemory (K3)"),"Terminal-Bench 4.0"]],
+ "Fechas leídas en las páginas oficiales de cada proveedor. SkillBuffBench (17-nov-2026) cruza memoria × 4 harness × 11 modelos vigentes, pero aún no publica resultados.");
+const HT=[["Pi (harness + archivo)",99,.046,91,.0032,"—"],["Codex 0.159.2 + archivo",98,.167,88,.0050,"—"],["Claude Code 2.1.295 + archivo",97,.187,91,.0082,"—"],["Todo en contexto",95,.117,92,.0019,"—"],["Mem0 2.1.0",95,.074,80,.0011,"$25.88"],["BM25, 8 resultados",90,.013,82,.00021,"—"],["Zep (Graphiti 0.30.2)",87,.0077,51,.00012,"$6.22"]];
+T("h_tax",["Método","Opus 5.5, % acierto#","$ por pregunta#","GPT-6 Luna, % acierto#","$ por pregunta#","Costo de construir la memoria (Opus 5.5)#"],HT.map(r=>[/Claude Code/.test(r[0])?hi(r[0]):r[0],r[1],r[2],r[3],r[4],r[5]]),lk("tax")+" · Memoria escrita por un modelo y leída por otro: Opus 5.5 leyendo memoria de GPT-6 Luna: Mem0 81, Zep 55. GPT-6 Luna leyendo memoria de Opus 5.5: Mem0 91, Zep 71.");
+const HC=[["Sin memoria",38.5,12.6,162],["Historial completo",40.6,10.4,170],["Mem0",39.6,13.0,137],["MemOp",39.6,17.8,109],["ReasoningBank",40.6,14.2,101],["Notas escritas por el propio agente",38.5,11.8,188]];
+T("h_core",["Condición","% resuelto#","Δ contra sin memoria#","Pasos#","Tareas resueltas por dólar#"],HC.map((r,i)=>[i?r[0]:hi(r[0]),r[1],i?delta(r[1]-38.5):"",r[2],r[3]]),`<a href="https://arxiv.org/abs/2611.17316">fuente</a> · Con GPT-5.6 Luna: 23.6 sin memoria, 24.0 historial, 22.6 Mem0, 25.7 notas propias. Ninguna memoria mueve el resultado más de 2.1 puntos.`);
+const CL=[["Opus 5.5",.655,.838],["Sonnet 5.5",.644,.833],["Opus 5",.564,.828],["Sonnet 5",.306,.610],["Opus 4.7",.383,.700],["Sonnet 4.6",.330,.364]];
+T("h_cl",["Modelo","Sin estado#","Con memoria#","Δ#"],CL.map(r=>[r[0],r[1],r[2],delta(r[2]-r[1],3)]),`<a href="https://www.anthropic.com/research/components-of-agent-memory">fuente</a> · Indicar «registra solo los fallos» redujo la ganancia: Opus 5 −0.234, Opus 4.7 −0.150.`);
+T("h_wiki",["Prueba de Anthropic (mismo estudio)","Condición","Resultado#"],[
+ ["Wiki sobre 350 mil archivos, 25 preguntas","Solo búsqueda","53 %"],["","Solo wiki consolidada, de 2 a 128 sesiones de consolidación","13 → 48 %"],["",hi("Búsqueda + wiki"),hi("54 → 61 %")],["","Tokens por pregunta con wiki","−20,000"],
+ ["Preguntas de fusión, 24 (Harvey)","Wiki contra solo búsqueda","87 % contra 73 %"],
+ ["Términos de contratos: datos que sobreviven",hi("Una página por contrato"),hi("57 de 57")],["","Una página compartida","41 de 57 (72 %)"],
+ ["Pokémon Red","Sonnet 3.7: 413 archivos de memoria","1 medalla"],["","Claude Fable 5: 10 archivos","4 medallas"]],
+ "Agentes con Opus 5 en la prueba de wiki. Un archivo por entidad conservó todo; el archivo compartido perdió 28 %.");
+const FM=[["Qwen4 Max",73.3,.98],["Opus 5.5",73.3,3.42],["Fable 5.2",73.3,3.71],["DeepSeek V4.1 Flash",71.1,3.86],["Gemini 4 Carbon",71.1,3.99],["Kimi K3",71.1,4.16],["Haiku 5.5",68.9,3.98],["GLM-5.3",68.9,4.08],["Gemini 4 Argon",64.4,1.05],["Gemini 4 Hydrogen",64.4,4.02],["GPT-6.1 Sol",51.1,4.00],["GPT-6.1 Terra",46.7,3.97],["Grok 4.7",37.8,3.70],["GPT-6 Luna",28.9,4.05]];
+T("h_fm",["Modelo que escribe la memoria","Puntaje, %#","Costo por tarea, $#"],FM.map(r=>[r[0],r[1],r[2]]),`<a href="https://frontiermemory.com/">fuente</a> · Rango entre modelos: 44.4 puntos con el mismo harness.`);
+T("h_fmh",["Harness de memoria","Opus 5.5 escribe y ejecuta, %#","GPT-6.1 Sol escribe, GPT-6 Sol ejecuta, %#"],[["Letta Dream",73.3,42.2],["Hermes Agent",64.4,4.4],[hi("Claude Managed Agents"),55.6,null],["Prime Agent",53.3,13.3],["OpenAI Agents SDK",null,26.7]],`<a href="https://www.frontiermemory.com/blog/v1/">fuente</a> · Lo reporta Letta, cuyo producto queda primero. Cobertura de la versión 1.0 da cifras distintas que no pude conciliar.`);
+T("h_comp",["Modelo","Base, %#","Con compactación, %#","Δ#","Orquestación → con compactación#"],[["Opus 5.5",68.8,65.2,delta(-3.6),"61.9 → 64.0"],["GPT-6 Astra",69.6,65.1,delta(-4.5),"61.0 → 56.4"],["Sonnet 5.5",61.3,57.7,delta(-3.6),"60.0 → 58.4"]],`<a href="https://arxiv.org/abs/2610.20959">fuente</a> · Resumir el contexto en la misma sesión cuesta 3.6 a 4.5 puntos: lo que debe sobrevivir tiene que estar en memoria.`);
+T("h_vend",["Sistema","Prueba","Modelo lector","Valor#","Fecha"],[
+ ["Mastra, memoria observacional","BEAM 100 mil / 1 millón / 10 millones","Opus 5.5","83.3 / 80.6 / 66.4","29-oct-2026"],
+ ["Mastra, memoria observacional","BEAM 100 mil / 1 millón / 10 millones","Gemini 3.8 Flash","78.4 / 72.8 / 57.8","29-oct-2026"],
+ ["Recallium","LongMemEval, 500 preguntas","Opus 5.5","98.4 % (sin memoria: 6.6 %)","30-sep-2026"],
+ ["ContextStream","LongMemEval / LoCoMo","Opus 5.5","96.8 % / 95.7 %","26-oct-2026"],
+ ["Mem0, modelo que extrae","LoCoMo","Opus 5.5 · Sonnet 5.5 · GPT-6 Luna · Haiku 5.5","93.5 · 93.4 · 92.6 · 92.3","20-oct-2026"],
+ ["Mem0, costo por 1,000 escrituras","—","Opus 5.5 · Sonnet 5.5 · Haiku 5.5 · GPT-6 Luna","$158.55 · $78.44 · $4.93 · $3.55","20-oct-2026"],
+ ["Mem0, latencia p95 por escritura","—","Opus 5.5 · Sonnet 5.5 · Haiku 5.5 · GPT-6 Luna","18.1 s · 10.4 s · 17.7 s · 15.2 s","20-oct-2026"]],
+ `<a href="https://mastra.ai/research/observational-memory-beam">Mastra</a> · <a href="https://recallium.ai/benchmarks">Recallium</a> · <a href="https://contextstream.io/benchmarks">ContextStream</a> · <a href="https://mem0.ai/blog/bring-your-own-key-accuracy-cost-latency-by-model">Mem0</a> · Con Mem0 el modelo que extrae mueve el acierto 1.5 puntos y el costo 45 veces. Zep, Hindsight, Supermemory, Cognee, MemPalace, Honcho y Letta Context-Bench no han publicado cifras con modelos vigentes.`);
+T("h_hs",["Harness","Correcciones por tarea: sin → con memoria#","Δ#","Costo por tarea: sin → con#","Tareas resueltas"],[["Claude Code","0.85 → 0.36","−58 %","$0.445 → $0.338","60–61 de 61, sin cambio"],["Codex CLI","1.34 → 0.47","−65 %","$0.577 → $0.276","sin cambio"],["opencode","1.20 → 0.80","−33 %","$0.634 → $0.553","sin cambio"]],`<a href="https://vectorize.io/benchmarks">fuente</a> · Sin fecha ni modelo declarados; lo reporta el vendedor de la memoria.`);
+T("h_dol",["Harness","Modelo","Memoria propia#","Mem0#","Honcho#","Hindsight#","Supermemory#"],[["Claude Code","Claude Sonnet 5",hi(26.33),32.33,35.83,null,null],["Hermes","GPT-5.6 Luna",65.67,70.67,68.50,69.50,59.17],["Hermes","MiniMax M3",26.50,47.83,47.33,41.00,20.00]],`<a href="https://arxiv.org/abs/2609.24971">fuente</a> · 600 tareas. Benchmark construido por Mem0.`);
+const TB=[["GitHub Copilot","Copilot Fusion",71.2],["Claude Code","Opus 5.5",65.8],["Claude Code","Fable 5.2",65.8],["Antigravity CLI","Gemini 4 Carbon",64.5],["Claude Code","Sonnet 5.5",63.9],["Codex","GPT-6.2 Astra",62.1],["Codex","GPT-6.2 Sol",61.5],["Codex","GPT-6.1 Sol",60.9],["Codex","GPT-6 Astra",60.3],["Claude Code","Kimi K3.1 Pro",59.7],["Antigravity CLI","Gemini 4 Hydrogen",56.4],["Antigravity CLI","Gemini 4 Argon",55.5],["Codex","GPT-6.1 Terra",53.3],["Claude Code","GLM-5.3",41.2],["Claude Code","Haiku 5.5",40.0],["Claude Code","DeepSeek V4.1 Flash",38.5],["Claude Code","Qwen3.8-Max",27.0]];
+T("h_tb",["Harness","Modelo","% resuelto#"],TB,`<a href="https://tbench.ai">fuente</a> · No mide memoria; sirve para ver cuánto pesa el modelo dentro del mismo harness (Claude Code: de 27.0 a 65.8).`);
+T("h_lc",["Prueba","Modelo","Valor","Quién"],[
+ ["ProgramBench, 166 tareas: % aprobado · con contador de contexto · se quedó sin contexto","Fable 5.2","85.6 · 91.6 · 68 %","Anthropic"],["","Opus 5.5","91.2 · 91.1 · 39 %","Anthropic"],["","Fable 5.1","87.6 · 86.8 · 28 %","Anthropic"],["","Sonnet 5.5 / Haiku 5.5","79.7 / 82.0","Anthropic"],
+ ["ARC-AGI-3: harness estándar → harness del proveedor con gestión de contexto","Fable 5.2","79.26 → 97.72","ARC Prize"],["","GPT-6 Astra","62.7 → 98.6","ARC Prize"],["","GPT-6.1 Sol","52.7 → 96.2","ARC Prize"],
+ ["GraphWalks, 256 mil a 1 millón de tokens, F1","Gemini 4 Carbon / Argon","96.2 / 84.2","Google"],["","GPT-6 Astra / Opus 5.5 / Fable 5.1","71.8 / 66.8 / 65.0","Google"],
+ ["Vending-Bench 2, saldo final medio","Gemini 4 Carbon / GPT-6 Astra / Gemini 4 Hydrogen","$16,484 / $15,515 / $14,549","Andon Labs"],["","Sonnet 5.5 / Fable 5.2 / Opus 5.5 / Haiku 5.5","$11,165 / $9,628 / $9,235 / $3,602","Andon Labs"]],
+ "Fichas de sistema de Anthropic (22-sep a 9-nov-2026) y fichas de Gemini 4. El harness mueve el resultado más que el modelo: en ARC-AGI-3, de 52.7 a 96.2 con el mismo modelo.");
+
+/* filas de modelos vigentes para el explorador */
+const X=(c,b,s,h,m,k,v,w,d,u)=>{SRC[u]=SRC[u]||u;add(c,b,s,h,m,k,v,w,d,u)};
+HC.forEach(r=>X("chm","CoReMem / ChainSWE",r[0],"mini-swe-agent","claude-opus-5.5","% resuelto",r[1],"i","2026-11","https://arxiv.org/abs/2611.17316"));
+[["Sin memoria",23.6],["Historial completo",24.0],["Mem0",22.6],["MemOp",22.9],["ReasoningBank",23.3],["Notas escritas por el propio agente",25.7]].forEach(r=>X("cm","CoReMem / ChainSWE",r[0],"mini-swe-agent","gpt-5.6-luna","% resuelto",r[1],"i","2026-11","https://arxiv.org/abs/2611.17316"));
+CL.forEach(r=>{X("m","CL-Bench (Anthropic)","Sin estado","",r[0],"recompensa × 100",+(r[1]*100).toFixed(1),"p","2026-11","https://www.anthropic.com/research/components-of-agent-memory");X("m","CL-Bench (Anthropic)","Con memoria","",r[0],"recompensa × 100",+(r[2]*100).toFixed(1),"p","2026-11","https://www.anthropic.com/research/components-of-agent-memory")});
+FM.forEach(r=>X("hm","FrontierMemory v1.1","Escritor de memoria","Letta Dream",r[0],"% puntaje",r[1],"p","2026-10","https://frontiermemory.com/"));
+[["Letta Dream",73.3],["Hermes Agent",64.4],["Claude Managed Agents",55.6],["Prime Agent",53.3]].forEach(r=>X("hm","FrontierMemory v1.1","Harness de memoria",r[0],"claude-opus-5.5","% puntaje",r[1],"p","2026-10","https://www.frontiermemory.com/blog/v1/"));
+[["Opus 5.5",68.8,65.2],["GPT-6 Astra",69.6,65.1],["Sonnet 5.5",61.3,57.7]].forEach(r=>{X("m","Compactación (2610.20959)","Base","",r[0],"% exactitud",r[1],"i","2026-10","https://arxiv.org/abs/2610.20959");X("m","Compactación (2610.20959)","Con compactación","",r[0],"% exactitud",r[2],"i","2026-10","https://arxiv.org/abs/2610.20959")});
+[["100 mil",83.3,78.4],["1 millón",80.6,72.8],["10 millones",66.4,57.8]].forEach(r=>{X("nm","BEAM","Mastra memoria observacional","","claude-opus-5.5","puntaje a "+r[0],r[1],"p","2026-10","https://mastra.ai/research/observational-memory-beam");X("nm","BEAM","Mastra memoria observacional","","gemini-3.8-flash","puntaje a "+r[0],r[2],"p","2026-10","https://mastra.ai/research/observational-memory-beam")});
+X("nm","LongMemEval","Recallium","","claude-opus-5.5","% correcto",98.4,"p","2026-09","https://recallium.ai/benchmarks");X("nm","LongMemEval","Sin memoria (Recallium)","","claude-opus-5.5","% correcto",6.6,"p","2026-09","https://recallium.ai/benchmarks");
+X("nm","LongMemEval","ContextStream","","claude-opus-5.5","% correcto",96.8,"p","2026-10","https://contextstream.io/benchmarks");X("nm","LoCoMo","ContextStream","","claude-opus-5.5","% juez",95.7,"p","2026-10","https://contextstream.io/benchmarks");
+[["claude-opus-5.5",93.5],["claude-sonnet-5.5",93.4],["glm-5.3-flash",93.0],["deepseek-v4.1-flash",92.9],["gpt-6-luna",92.6],["claude-haiku-5.5",92.3],["gemini-3.8-flash",92.0]].forEach(r=>X("nm","LoCoMo","Mem0, modelo que extrae","",r[0],"% juez",r[1],"p","2026-10","https://mem0.ai/blog/bring-your-own-key-accuracy-cost-latency-by-model"));
+[["Claude Code","claude-sonnet-5",[["Memoria propia",26.33],["Mem0",32.33],["Honcho",35.83]]],["Hermes","gpt-5.6-luna",[["Memoria propia",65.67],["Mem0",70.67],["Honcho",68.50],["Hindsight",69.50],["Supermemory",59.17]]]].forEach(g=>g[2].forEach(r=>X("hm","DolphinBench",r[0],g[0],g[1],"% exactitud",r[1],"p","2026-09","https://arxiv.org/abs/2609.24971")));
+TB.forEach(r=>X("chm","Terminal-Bench 4.0 (sin memoria)","—",r[0],r[1],"% resuelto",r[2],"i","2026-11","https://tbench.ai"));
+[["Fable 5.2",85.6],["Opus 5.5",91.2],["Fable 5.1",87.6],["Sonnet 5.5",79.7],["Haiku 5.5",82.0]].forEach(r=>X("cm","ProgramBench (sin memoria)","Ventana única de 1 millón","mini-swe-agent",r[0],"% aprobado",r[1],"p","2026-11","https://www.anthropic.com/document/claude-fable-5-2-mythos-5-2-system-card"));
+[["Qwen3.8-27B · PrisMem",63.39],["Qwen3.8-27B · HippoRAG2",51.86],["Qwen3.8-27B · A-MEM",51.56],["Qwen3.8-27B · Mem0",48.95]].forEach(r=>X("nm","BEAM",r[0].split(" · ")[1],"","qwen3.8-27b","puntaje a 1 millón",r[1],r[0].includes("PrisMem")?"p":"i","2026-10","https://arxiv.org/abs/2610.06361"));
+const VIG=m=>/fable.?5\.2|mythos.?5\.2|opus.?5\.5|sonnet.?5\.5|haiku.?5\.5|gpt-6|gemini.?4|gemini.?3\.8|qwen.?4|qwen3\.8|deepseek.?v4\.1|ds-v4\.1|glm-5\.3|kimi.?k3|grok 4\.7|copilot fusion/i.test(m)?"a":/opus.?5\b|sonnet.?5\b|fable.?5(\.1)?\b|gpt-5\.[56]|chatgpt-5\.6|gemini.?3\.[57]|opus.?4\.8|qwen3\.7|deepseek.?v4|glm-5\.2|kimi.?k2\.[67]|ds-vision|minimax 2\.7/i.test(m)?"p":m==="—"?"s":"o";
+R.forEach(r=>r.g=VIG(r.m));
+const CAT={"":"Todas las categorías",n:"Lenguaje natural",c:"Código",h:"Harness",m:"Modelos"},WHO={"":"Quién midió: todos",i:"independiente",p:"propio",c:"competidor"};
+$("fcat").innerHTML=Object.entries(CAT).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+$("fwho").innerHTML=Object.entries(WHO).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+$("fbench").innerHTML=`<option value="">Todos los benchmarks</option>`+[...new Set(R.map(r=>r.b))].sort().map(b=>`<option>${b}</option>`).join("");
+let sk="b",sd=1;
+function drawX(){
+  const g=$("fvig").value,c=$("fcat").value,b=$("fbench").value,w=$("fwho").value,q=$("fq").value.toLowerCase();
+  let rows=R.filter(r=>(!g||g.includes(r.g))&&(!c||r.c.includes(c))&&(!b||r.b===b)&&(!w||r.w===w)&&(!q||(r.s+r.h+r.m+r.b+r.k).toLowerCase().includes(q)));
+  rows.sort((x,y)=>(x[sk]>y[sk]?1:x[sk]<y[sk]?-1:0)*sd||(y.v-x.v));
+  const pc=r=>/%|promedio|pass|puntaje|recuperación/.test(r.k);
+  $("fcount").textContent=rows.length+" de "+R.length+" filas";
+  const H=[["b","Benchmark"],["s","Sistema o condición"],["h","Harness"],["m","Modelo"],["g","Vigencia"],["k","Métrica"],["v","Valor"],["w","Quién"],["d","Fecha"]];
+  $("xt").innerHTML=`<thead><tr>${H.map(h=>`<th data-s="${h[0]}"${h[0]==="v"?' class="n"':""}>${h[1]}${sk===h[0]?(sd>0?" ↑":" ↓"):""}</th>`).join("")}<th></th></tr></thead><tbody>`+
+   rows.map(r=>`<tr><td>${r.b}</td><td>${r.s}</td><td>${r.h}</td><td>${r.m}</td><td><span class="t ${r.g==="a"?"g":r.g==="p"?"w":"x"}">${{a:"vigente",p:"anterior",s:"sin modelo",o:"antiguo"}[r.g]}</span></td><td>${r.k}</td><td class="n">${f1(r.v)}${pc(r)?`<span class="vb" style="width:${Math.max(1,r.v*.6)}px"></span>`:""}</td><td><span class="t ${r.w==="i"?"g":r.w==="p"?"w":"x"}">${WHO[r.w]}</span></td><td>${r.d}</td><td><a href="${SRC[r.src]}">fuente</a></td></tr>`).join("")+"</tbody>";
+}
+$("xt").addEventListener("click",e=>{const k=e.target.dataset&&e.target.dataset.s;if(k){sd=sk===k?-sd:(k==="v"?-1:1);sk=k;drawX()}});
+["fvig","fcat","fbench","fwho"].forEach(i=>$(i).addEventListener("change",drawX));$("fq").addEventListener("input",drawX);$("fvig").value="a";drawX();
+
+/* ================= PROTOCOLO ================= */
+T("pm",["Métrica","Definición","Unidad","Línea base de hoy (A)","Dirección"],[
+ ["M1 · Éxito","Respuestas que coinciden con la clave fija","% de tareas","sin medir","más es mejor"],
+ ["M2 · Omisiones","Elementos de la clave que el agente no encontró","% de elementos","sin medir; una omisión conocida (un proyecto no listado)","menos"],
+ ["M3 · Llamadas hasta el primer dato correcto","Herramientas usadas antes de citar el dato","llamadas","Proyecto foco: 4 de las primeras 8 fueron búsqueda","menos"],
+ ["M4 · Contexto al arrancar","Tokens antes de la primera respuesta","tokens",f1(L.start_ctx_median)+" (mediana)","menos"],
+ ["M5 · Tokens totales","Entrada + salida de la tarea","tokens","sin medir","menos"],
+ ["M6 · Tiempo","De la pregunta a la respuesta","segundos","sin medir","menos"],
+ ["M7 · Lectura cruzada","Sesiones que leen memoria de otro proyecto","% de sesiones",pct(L.sessions_with_cross,L.sessions),"informativa"],
+ ["M8 · Contaminación","Memorias cargadas que no se usaron en la respuesta","% de lo cargado","sin medir","menos"]]);
+T("pd",["Elemento","Valor","Nota"],[
+ ["Tareas","20 preguntas con respuesta verificable en archivos","10 dentro de un proyecto, 10 que cruzan proyectos (tipo «mi red»)"],
+ ["Condiciones","A por proyecto · B por proyecto + puente · C unificada","Misma carpeta de memorias, distinta organización"],
+ ["Harness","Al menos 2","Por ejemplo Claude Code y Codex CLI en modo sin interfaz"],
+ ["Modelos","Al menos 2","Uno fuerte y uno económico: con archivos el rango entre modelos llega a 68 puntos"],
+ ["Repeticiones","3 por celda","La literatura usa 1 a 4"],
+ ["Corridas, versión completa","720","20 × 3 × 2 × 2 × 3"],
+ ["Corridas, versión mínima","180","20 × 3 × 1 × 1 × 3"],
+ ["Calificación","Script contra clave fija","Sin juez automático: el juez de LoCoMo aceptó 63 % de respuestas falsas"],
+ ["Regla de decisión","C o B sustituyen a A si M1 sube más de 5 puntos o M2 baja más de 10, sin que M4 suba más de 20 %","Umbrales propuestos, ajustables"]]);
+T("ph",["Harness","Archivo que lee","Cómo apunta a la carpeta de memoria","Modo sin interfaz"],[
+ ["Claude Code","CLAUDE.md","Carpeta nativa por proyecto, o ajuste <code>autoMemoryDirectory</code>","sí"],
+ ["Codex CLI","AGENTS.md","Ruta de la carpeta escrita en AGENTS.md","sí"],
+ ["Gemini CLI","GEMINI.md","Ruta en GEMINI.md","sí"],
+ ["OpenCode","AGENTS.md o CLAUDE.md","Ruta en el archivo","sí"],
+ ["Hermes","AGENTS.md o CLAUDE.md del proyecto","Ruta en el archivo; su memoria propia es global","no verificado"]],
+ "Los comandos exactos de cada harness no se verificaron en esta investigación.");
+T("pn",["Estudio","Corridas por celda#","Tamaño","Resultado sobre ruido"],[
+ ["VibeMemBench",4,"111 tareas","Diferencias de 1.1 a 4.5 puntos reportadas"],
+ ["Khatri, archivos de contexto",null,"288 corridas","p = 1.0 y p = 0.66: sin efecto detectable"],
+ ["ETH, AGENTS.md",null,"300 y 138 tareas","+2.4 puntos con p = 0.21: no significativo"],
+ ["MemoryTax",1,"152 preguntas","Una corrida por celda"],
+ ["Prueba autopublicada en Claude Code",null,"49 tareas pareadas","+10.2 puntos; intervalo del efecto [0, 0.47] por tarea: débil"],
+ ["DreamBench-SWE",null,"180 tareas","Memoria contra sin memoria: significativo. Entre memorias: no"]],
+ "Con 20 tareas y 3 repeticiones solo se distinguen diferencias grandes, de 15 puntos o más.");
+
+/* ================= pestañas y tema ================= */
+const TABS=[["decision","Decisión"],["hoy","Modelos de hoy"],["nl","Lenguaje natural"],["code","Código"],["harness","Harness"],["models","Modelos"],["limits","Restricciones"],["explore","Explorador"],["proto","Protocolo"]];
+$("tabs").innerHTML=TABS.map(t=>`<button type="button" role="tab" data-t="${t[0]}">${t[1]}</button>`).join("")+`<button type="button" class="th" id="theme">Claro / oscuro</button>`;
+function show(t){if(!TABS.some(x=>x[0]===t))t="decision";document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===t));document.querySelectorAll("#tabs [data-t]").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===t));try{history.replaceState(null,"","#"+t)}catch(e){}}
+$("tabs").addEventListener("click",e=>{if(e.target.dataset.t){show(e.target.dataset.t);scrollTo(0,0)}});
+show(location.hash.slice(1));
+$("theme").addEventListener("click",()=>{const r=document.documentElement,d=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches;r.dataset.theme=d?"light":"dark"});
+</script>
+</body>
+</html>
