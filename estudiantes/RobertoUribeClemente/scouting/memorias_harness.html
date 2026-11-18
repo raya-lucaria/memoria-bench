@@ -1,0 +1,597 @@
+<title>Agent Memory Field Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single reading column (~72ch) with wide breakouts for the table and chart; cards in a 2-col grid that stacks on phones. */
+:root{
+  --bg:#f5f7f8; --surface:#ffffff; --fg:#17212b; --muted:#5a6773; --line:#d9e0e5;
+  --accent:#0f6e75; --accent-soft:#e1f0f0; --alt:#9aa9b4; --warn:#a4531a; --warn-soft:#fbeee3;
+  --good:#2f7a3c; --good-soft:#e6f3e8; --on-bar:#ffffff;
+  --f-display:"Sora", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10171d; --surface:#172129; --fg:#e4eaee; --muted:#9aa8b3; --line:#2a3741;
+  --accent:#4fb8bf; --accent-soft:#16343a; --alt:#5d6d79; --warn:#e3995e; --warn-soft:#3a2617;
+  --good:#7cc68a; --good-soft:#1b3322; --on-bar:#0c1418; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#10171d; --surface:#172129; --fg:#e4eaee; --muted:#9aa8b3; --line:#2a3741;
+  --accent:#4fb8bf; --accent-soft:#16343a; --alt:#5d6d79; --warn:#e3995e; --warn-soft:#3a2617;
+  --good:#7cc68a; --good-soft:#1b3322; --on-bar:#0c1418; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:40px 64px}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+.prose{max-width:72ch}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:clamp(2rem,5vw,3rem);letter-spacing:-.02em}
+h2{font-size:1.6rem;letter-spacing:-.01em}
+h3{font-size:1.12rem}
+p{margin:0}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--accent-soft);padding:.05em .35em;border-radius:4px}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:14px}
+.lede{font-size:1.15rem;color:var(--muted);max-width:68ch}
+.meta{font-family:var(--f-mono);font-size:.82rem;color:var(--muted)}
+
+/* TL;DR */
+.verdicts{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.verdicts li{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:baseline;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.tag{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.tag.use{background:var(--good-soft);color:var(--good)}
+.tag.opt{background:var(--accent-soft);color:var(--accent)}
+.tag.skip{background:var(--warn-soft);color:var(--warn)}
+
+/* glossary */
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.term{padding:14px 16px;border-left:3px solid var(--accent);background:var(--surface)}
+.term b{font-family:var(--f-mono);font-size:.9rem;display:block;margin-bottom:4px}
+.term p{font-size:.93rem;color:var(--muted)}
+
+/* table */
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:820px;font-size:.9rem}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td:first-child{font-weight:600}
+
+/* chart */
+.chart{border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:16px;overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:560px;height:auto}
+.chart text{font-family:var(--f-mono);fill:var(--fg)}
+.chart .muted{fill:var(--muted)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .b-vendor{fill:var(--accent)}
+.chart .b-alt{fill:var(--alt)}
+.chart .b-indep{fill:var(--warn)}
+.chart .onbar{fill:var(--on-bar);font-size:11px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:.85rem;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:2px;display:inline-block}
+.sw.v{background:var(--accent)} .sw.a{background:var(--alt)} .sw.i{background:var(--warn)}
+
+/* system cards */
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:760px){.cards{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card .kind{font-family:var(--f-mono);font-size:.75rem;color:var(--muted);letter-spacing:.04em}
+.card h4{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:4px 0 0;font-weight:500}
+.card ul{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:4px;font-size:.93rem}
+.score{font-family:var(--f-mono);font-size:.86rem;font-variant-numeric:tabular-nums;background:var(--bg);border-radius:6px;padding:8px 10px}
+.voices{display:flex;flex-direction:column;gap:8px}
+.voice{font-size:.92rem;padding:8px 12px;border-radius:6px;background:var(--bg)}
+.voice.pro{border-left:3px solid var(--good)}
+.voice.con{border-left:3px solid var(--warn)}
+.voice .src{display:block;font-family:var(--f-mono);font-size:.74rem;color:var(--muted);margin-top:2px}
+
+.note{padding:14px 16px;background:var(--warn-soft);border-radius:8px;font-size:.94rem;max-width:72ch}
+.sources{columns:2 320px;column-gap:32px;font-size:.88rem;padding-left:1.1em;margin:0}
+.sources li{break-inside:avoid;margin-bottom:6px}
+/* benchmark sections */
+.part{display:flex;flex-direction:column;gap:6px;padding-top:28px;border-top:2px solid var(--accent)}
+.steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px;max-width:72ch}
+.chart .box{fill:var(--bg);stroke:var(--line);stroke-width:1.2}
+.chart .box-dim{fill:var(--bg);stroke:var(--alt);stroke-width:1.2;stroke-dasharray:4 3}
+.chart .frame{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.chart .stage{fill:var(--surface);stroke:var(--accent);stroke-width:1}
+.chart .wire{stroke:var(--muted);stroke-width:1.2;fill:none}
+.chart .head{fill:var(--muted)}
+.chart .b-oracle{fill:var(--alt)}
+.chart .b-ret{fill:var(--accent)}
+.sw.o{background:var(--alt)} .sw.r{background:var(--accent)}
+.sw.d{background:transparent;border:1.5px dashed var(--alt)}
+.findings{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:8px;max-width:72ch}
+td.ok{color:var(--good)} td.low{color:var(--warn)}
+table.small{min-width:640px}
+pre{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:var(--f-mono);font-size:.82rem;line-height:1.55}
+pre code{background:none;padding:0;font-size:inherit}
+.codes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:760px){.codes{grid-template-columns:1fr}}
+.codes figure{margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+.codes figcaption{font-family:var(--f-mono);font-size:.78rem;color:var(--muted)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">Research brief · November 2026</span>
+  <h1>Agent Memory Field Guide</h1>
+  <p class="lede">How coding-agent harnesses remember things between sessions: the native memory in Claude Code and Gemini CLI, the "second brain" pattern, OptMem, MemPalace, and the memory providers in Hermes Agent. Covers benchmark claims, independent reruns, and what users report after using them.</p>
+  <p class="meta">Compiled 2026-11-17 from web search. Reddit threads were not directly indexable, so Reddit opinions are quoted second-hand through the articles that cite them. Benchmark pilot run on 2026-11-18 on one laptop, with subscriptions and free tiers only.</p>
+</header>
+
+<section>
+  <h2>The short answer</h2>
+  <ul class="verdicts">
+    <li><span class="tag use">Use</span><div><b>Claude Code native memory</b> (<code>CLAUDE.md</code> + auto memory) as your base. It's free, plain Markdown you can audit, and already on.</div></li>
+    <li><span class="tag opt">Add if needed</span><div><b>OptMem</b> when you want one memory shared by Claude Code, Gemini, Codex and Hermes. Expect regex search, not semantic search.</div></li>
+    <li><span class="tag opt">Add if needed</span><div><b>Hindsight</b> as the Hermes provider: open source, self-hostable, and the strongest judged-accuracy numbers. <b>Honcho</b> second, if you want user modeling.</div></li>
+    <li><span class="tag opt">Different job</span><div><b>Second brain (Obsidian)</b> is a knowledge base for you that the agent can read. It works only if you keep it pruned.</div></li>
+    <li><span class="tag skip">Be skeptical</span><div><b>MemPalace</b> and <b>Mem0</b> headline scores. Both fall apart once you check the metric or rerun the system independently.</div></li>
+    <li><span class="tag use">Measure</span><div><b>LongMemEval-S</b> is the benchmark to run yourself. In our 30-question pilot, a free local embedder found the evidence almost every time, and the answering model made the difference: Sonnet kept 87 % with retrieved memory, Haiku fell to 70 %.</div></li>
+  </ul>
+</section>
+
+<section>
+  <h2>How to read memory benchmarks</h2>
+  <p class="prose">Almost every vendor claims 90 %+ on the same two benchmarks. The numbers aren't comparable, because each vendor measures something different and picks its own answer model and judge.</p>
+  <div class="terms">
+    <div class="term"><b>LongMemEval</b><p>Questions about facts buried in long multi-session chat histories. The most quoted benchmark in 2026.</p></div>
+    <div class="term"><b>LoCoMo</b><p>Very long conversations with questions about them. Older, and close to saturated: Honcho's no-memory baseline already scores 83.9 %.</p></div>
+    <div class="term"><b>Recall@k</b><p>Did the right passage appear in the top k results? Measures retrieval only. No answer is generated or graded.</p></div>
+    <div class="term"><b>Judge accuracy</b><p>An LLM answers using the memory, and another LLM grades the answer. This is the score that matters for agents.</p></div>
+    <div class="term"><b>BEAM · MemoryAgentBench</b><p>Newer suites that test memory at scale and incremental multi-turn learning. Fewer vendors report them.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>LongMemEval: claimed vs checked</h2>
+  <div class="chart">
+    <svg viewBox="0 0 660 352" role="img" aria-label="Bar chart of LongMemEval scores. MemPalace 96.6 recall raw, 84.2 with AAAK. Supermemory 97 recall at 20, 85.4 accuracy. Mem0 94.4 claimed, 56.0 independent. Hindsight 94.6 benchmark, 91.4 paper. Honcho 92.6 self-run.">
+      <!-- scale: x = 150 + v*4.4 -->
+      <g class="grid">
+        <line x1="150" y1="10" x2="150" y2="326"/><line x1="260" y1="10" x2="260" y2="326"/>
+        <line x1="370" y1="10" x2="370" y2="326"/><line x1="480" y1="10" x2="480" y2="326"/>
+        <line x1="590" y1="10" x2="590" y2="326"/>
+      </g>
+      <g class="muted" font-size="11" text-anchor="middle">
+        <text class="muted" x="150" y="344">0</text><text class="muted" x="260" y="344">25</text>
+        <text class="muted" x="370" y="344">50</text><text class="muted" x="480" y="344">75</text>
+        <text class="muted" x="590" y="344">100 %</text>
+      </g>
+
+      <text x="0" y="34" font-size="13" font-weight="500">MemPalace</text>
+      <rect class="b-vendor" x="150" y="20" width="425.0" height="18" rx="2"/>
+      <text class="onbar" x="156" y="33">recall@5, raw</text><text x="581" y="33" font-size="12">96.6</text>
+      <rect class="b-alt" x="150" y="44" width="370.5" height="18" rx="2"/>
+      <text class="onbar" x="156" y="57">recall@5, AAAK on</text><text x="526" y="57" font-size="12">84.2</text>
+
+      <text x="0" y="96" font-size="13" font-weight="500">Supermemory</text>
+      <rect class="b-vendor" x="150" y="82" width="426.8" height="18" rx="2"/>
+      <text class="onbar" x="156" y="95">recall@20</text><text x="583" y="95" font-size="12">97</text>
+      <rect class="b-alt" x="150" y="106" width="375.8" height="18" rx="2"/>
+      <text class="onbar" x="156" y="119">answer accuracy</text><text x="532" y="119" font-size="12">85.4</text>
+
+      <text x="0" y="158" font-size="13" font-weight="500">Mem0</text>
+      <rect class="b-vendor" x="150" y="144" width="415.4" height="18" rx="2"/>
+      <text class="onbar" x="156" y="157">claimed, metric unstated</text><text x="571" y="157" font-size="12">94.4</text>
+      <rect class="b-indep" x="150" y="168" width="246.4" height="18" rx="2"/>
+      <text class="onbar" x="156" y="181">independent harness</text><text x="402" y="181" font-size="12">56.0</text>
+
+      <text x="0" y="220" font-size="13" font-weight="500">Hindsight</text>
+      <rect class="b-vendor" x="150" y="206" width="416.2" height="18" rx="2"/>
+      <text class="onbar" x="156" y="219">judge acc., single query</text><text x="572" y="219" font-size="12">94.6</text>
+      <rect class="b-alt" x="150" y="230" width="402.2" height="18" rx="2"/>
+      <text class="onbar" x="156" y="243">paper, judge accuracy</text><text x="558" y="243" font-size="12">91.4</text>
+
+      <text x="0" y="282" font-size="13" font-weight="500">Honcho</text>
+      <rect class="b-vendor" x="150" y="268" width="407.4" height="18" rx="2"/>
+      <text class="onbar" x="156" y="281">self-run, judge accuracy</text><text x="563" y="281" font-size="12">92.6</text>
+    </svg>
+    <div class="legend">
+      <span><i class="sw v"></i>Vendor-reported headline</span>
+      <span><i class="sw a"></i>Same vendor, other metric or setting</span>
+      <span><i class="sw i"></i>Independent rerun</span>
+    </div>
+  </div>
+  <p class="prose">The two recall bars at the top measure retrieval only, so they don't belong on the same scale as judged accuracy. The single independent rerun shown, Mem0's, cuts the claim almost in half. On LoCoMo the same thing happens to Hindsight (92 self-reported, 82.0 in someone else's harness) and to Zep (75.1 vs 58.4, depending on who ran it).</p>
+</section>
+
+<section>
+  <h2>Side by side</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>System</th><th>Kind</th><th>Storage &amp; retrieval</th><th>Runs</th><th>Harnesses</th><th>Best evidence</th></tr></thead>
+      <tbody>
+        <tr><td>Claude Code</td><td>Built in</td><td><code>CLAUDE.md</code> + <code>MEMORY.md</code> index + topic files; loaded at session start</td><td>Local</td><td>Claude Code</td><td>No benchmark (no retrieval layer)</td></tr>
+        <tr><td>Gemini CLI</td><td>Built in</td><td><code>GEMINI.md</code>; <code>save_memory</code> appends facts; Auto Memory (experimental) mines sessions</td><td>Local</td><td>Gemini CLI</td><td>No benchmark</td></tr>
+        <tr><td>Second brain</td><td>Pattern</td><td>Obsidian vault of Markdown, read via files, MCP or hooks</td><td>Local</td><td>Any that reads files</td><td>No benchmark</td></tr>
+        <tr><td>OptMem</td><td>Prompt + script</td><td>Append-only log, tree summaries, regex search; ~426-token prompt block</td><td>Local</td><td>Claude Code, Gemini, Codex, Hermes</td><td>No benchmark</td></tr>
+        <tr><td>MemPalace</td><td>Library / MCP</td><td>ChromaDB + SQLite, "rooms" hierarchy, optional AAAK compression</td><td>Local</td><td>MCP clients</td><td class="num">96.6 R@5 (retrieval only)</td></tr>
+        <tr><td>Hindsight</td><td>Hermes provider</td><td>Four networks (facts, experiences, entities, beliefs) + reflection</td><td>Cloud or self-host</td><td>Hermes, API</td><td class="num">91.4–94.6 LME judged</td></tr>
+        <tr><td>Honcho</td><td>Hermes provider</td><td>User modeling: profiles, conclusions, semantic search</td><td>Cloud</td><td>Hermes, API</td><td class="num">92.6 LME / 89.9 LoCoMo</td></tr>
+        <tr><td>Mem0</td><td>Hermes provider</td><td>Extracted facts via REST API (Hermes plugin is cloud)</td><td>Cloud or self-host</td><td>Hermes, MCP</td><td class="num">94.4 claimed / 56.0 indep.</td></tr>
+        <tr><td>Supermemory</td><td>Hermes provider</td><td>Hosted memory API with aggregation</td><td>Cloud</td><td>Hermes, MCP</td><td class="num">97 R@20 / 85.4 acc.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>System by system, with user reports</h2>
+  <p class="prose">Green notes are what users like. Orange notes are what they complain about. Each one names where the report came from.</p>
+  <div class="cards">
+
+    <article class="card">
+      <span class="kind">Built into the harness</span>
+      <h3>Claude Code</h3>
+      <ul>
+        <li><code>CLAUDE.md</code>: your rules. Loaded from the current directory and every parent directory.</li>
+        <li>Auto memory: Claude's own notes in <code>~/.claude/projects/&lt;project&gt;/memory/</code>, with a <code>MEMORY.md</code> index. On by default since v2.1.59; toggle with <code>/memory</code>.</li>
+        <li>Guides report that only the first ~200 lines of <code>MEMORY.md</code> load at startup, with topic files read on demand. Not confirmed in the official docs.</li>
+      </ul>
+      <h4>Users report</h4>
+      <div class="voices">
+        <div class="voice pro">Simplest setup that works: keep the hard rules in CLAUDE.md and let auto memory pick up the patterns it learns.<span class="src">several setup guides</span></div>
+        <div class="voice con">The agent trusted a stale note that said a channel was primary, sessions after it had been dropped. Memory needs checking against the current code.<span class="src">DEV Community comment</span></div>
+        <div class="voice con">Memory is per machine and per repo, with no sync. A GitHub issue asks for portable memory.<span class="src">claudeissues #85557</span></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <span class="kind">Built into the harness</span>
+      <h3>Gemini CLI</h3>
+      <ul>
+        <li><code>save_memory(fact)</code> appends a fact under <code>## Gemini Added Memories</code> in <code>~/.gemini/GEMINI.md</code>.</li>
+        <li>Run <code>/memory refresh</code> after editing the file by hand.</li>
+        <li>Auto Memory is experimental and off by default (<code>experimental.autoMemory</code>). It mines idle sessions with 10+ messages and puts proposals in a review inbox. Nothing is applied automatically.</li>
+      </ul>
+      <h4>Users report</h4>
+      <div class="voices">
+        <div class="voice pro">Review-first Auto Memory avoids the junk build-up that fully automatic memory causes.<span class="src">official docs</span></div>
+        <div class="voice con">Saving happens only when the model decides to call the tool, so facts get missed. Few public complaints exist beyond this.<span class="src">docs + third-party guides</span></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <span class="kind">Pattern, not a product</span>
+      <h3>Second brain (Obsidian + agent)</h3>
+      <ul>
+        <li>A vault of Markdown notes and a context file. The agent reads and writes notes.</li>
+        <li>Tools: <b>second-brain-mcp</b> (MCP, you approve each note), <b>SuperBrain</b> (saves every session automatically), <b>claude-obsidian</b> skills.</li>
+      </ul>
+      <h4>Users report</h4>
+      <div class="voices">
+        <div class="voice pro">Developers say it helps a lot on long projects. Obsidian is just a folder Claude can already read.<span class="src">blog round-ups</span></div>
+        <div class="voice con">"My Obsidian vault turned into a junk drawer once life got busy."<span class="src">Reddit user, quoted by a Substack critique</span></div>
+        <div class="voice con">"Markdown files can't replace databases." Critics call these tutorials mislabeled memory.<span class="src">"Stop Calling It Memory" essay</span></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <span class="kind">Prompt + one Python file · Victor Taelin</span>
+      <h3>OptMem</h3>
+      <ul>
+        <li>Paste the ~426-token block into <code>AGENTS.md</code> / <code>CLAUDE.md</code>. Installs to <code>~/.optmem/memo</code>; <code>memo wake</code> starts each session.</li>
+        <li>Append-only log with tree-style summaries. No database, no embeddings.</li>
+        <li>Forks add semantic recall (rafmyr) and BM25 + decay (Hermes plugin).</li>
+      </ul>
+      <h4>Users report</h4>
+      <div class="voices">
+        <div class="voice pro">887 GitHub stars in five days. Good for a solo dev who is tired of re-explaining context.<span class="src">AlphaSignal, PyTorch KR forum</span></div>
+        <div class="voice con">Regex search misses a concept when it's worded differently. Not built for a team sharing one memory.<span class="src">PyTorch KR forum, MoClaw review</span></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <span class="kind">Local library / MCP · Jovovich &amp; Sigman</span>
+      <h3>MemPalace</h3>
+      <ul>
+        <li>Method-of-loci layout over ChromaDB + SQLite. MIT license, zero API cost.</li>
+        <li>96.6 % R@5 is basically ChromaDB's default embeddings on raw text. AAAK compression drops it to 84.2 %. The 100 % reranked figure looks overfitted.</li>
+      </ul>
+      <h4>Users report</h4>
+      <div class="voices">
+        <div class="voice pro">Fans like that it keeps text verbatim, after other tools summarized away the details they needed.<span class="src">DEV Community review</span></div>
+        <div class="voice con">Mixed reaction on r/coolgithubprojects: hype criticized, local-first idea defended.<span class="src">explainx.ai summary of the thread</span></div>
+        <div class="voice con">The palace metaphor takes a session to learn. Early versions lacked input sanitization.<span class="src">DEV review, Stork AI</span></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <span class="kind">Harness with pluggable providers · Nous Research</span>
+      <h3>Hermes Agent providers</h3>
+      <ul>
+        <li>Built-in Markdown memory always runs, plus <b>one</b> external provider: honcho, hindsight, mem0, supermemory, openviking, holographic, retaindb, byterover (and newer ones).</li>
+        <li><b>Hindsight</b>: knowledge graph plus a reflection step. A local install needs Postgres and an LLM key.</li>
+        <li><b>Honcho</b>: models the user. It has moved to a standalone plugin repository.</li>
+      </ul>
+      <h4>Users report</h4>
+      <div class="voices">
+        <div class="voice con">One operator tried every provider, turned them all off, and kept the built-in Markdown: "agents don't remember, agents read."<span class="src">Reddit post, summarized second-hand</span></div>
+        <div class="voice pro">Honcho and Hindsight in the cloud are both rated easy to set up. Pick Honcho for per-user modeling, Hindsight for structured recall.<span class="src">Vectorize / Glukhov comparisons</span></div>
+      </div>
+    </article>
+
+  </div>
+  <p class="prose">Other memory plugins that show up in Claude Code discussions: <b>claude-mem</b> (captures and compresses sessions automatically), <b>Omega</b> (local MCP with hooks; its author notes hook capture only works in Claude Code), and a <b>self-hosted mem0 MCP</b> that injects context at session start through hooks.</p>
+</section>
+
+<div class="part">
+  <span class="eyebrow">Part two · Run it yourself</span>
+  <p class="lede">A memory benchmark you can run on a laptop with no API key: what it measures, how it stays fair across harnesses, and what a first 30-question pilot found.</p>
+</div>
+
+<section>
+  <h2>Measuring memory yourself</h2>
+  <p class="prose">An agent's memory is used in two steps. First a search picks a few old conversations out of many. Then a model reads them and answers. A good test scores each step on its own, because they fail in different ways. If the search misses the evidence, no model can answer. If the search finds it, a weak reader can still answer badly.</p>
+  <ul class="steps">
+    <li><b>Retrieval recall.</b> Did the sessions holding the answer land in the top 5? No model is involved, so it costs nothing and runs locally.</li>
+    <li><b>Judged accuracy with retrieved memory.</b> The harness answers from those top 5 sessions, and a fixed judge grades the answer.</li>
+    <li><b>Judged accuracy with the answer sessions given.</b> The harness gets exactly the sessions that hold the answer. This is the ceiling: the score with perfect memory.</li>
+  </ul>
+  <p class="prose">The gap between the last two numbers is what memory costs you. The gap between the ceiling and 100 % is the reader's fault, not memory's.</p>
+
+  <div class="chart">
+    <svg viewBox="0 0 660 262" role="img" aria-label="Architecture. Five harness adapters (Claude Code, opencode, Hermes Agent, Gemini CLI, Codex CLI) each send a prompt and return text. They all feed the same fixed LongMemEval-S benchmark, which runs four stages in order: sample, memory search, reader, judge. Results are written as one JSONL file per harness and condition.">
+      <defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="head" d="M0,0 L8,4 L0,8 z"/></marker></defs>
+      <text class="muted" x="10" y="14" font-size="11">ADAPTERS · one file each</text>
+      <rect class="box" x="10" y="24" width="160" height="34" rx="6"/><text x="90" y="45" font-size="12" text-anchor="middle">Claude Code</text>
+      <rect class="box" x="10" y="68" width="160" height="34" rx="6"/><text x="90" y="89" font-size="12" text-anchor="middle">opencode</text>
+      <rect class="box-dim" x="10" y="112" width="160" height="34" rx="6"/><text class="muted" x="90" y="133" font-size="12" text-anchor="middle">Hermes Agent</text>
+      <rect class="box-dim" x="10" y="156" width="160" height="34" rx="6"/><text class="muted" x="90" y="177" font-size="12" text-anchor="middle">Gemini CLI</text>
+      <rect class="box-dim" x="10" y="200" width="160" height="34" rx="6"/><text class="muted" x="90" y="221" font-size="12" text-anchor="middle">Codex CLI</text>
+      <path class="wire" d="M170,41 C220,41 225,129 268,129" marker-end="url(#arr)"/>
+      <path class="wire" d="M170,85 C220,85 225,129 268,129" marker-end="url(#arr)"/>
+      <path class="wire" d="M170,129 L268,129" marker-end="url(#arr)"/>
+      <path class="wire" d="M170,173 C220,173 225,129 268,129" marker-end="url(#arr)"/>
+      <path class="wire" d="M170,217 C220,217 225,129 268,129" marker-end="url(#arr)"/>
+      <text class="muted" x="219" y="250" font-size="11" text-anchor="middle">ask(prompt) → text</text>
+      <rect class="frame" x="272" y="24" width="262" height="210" rx="8"/>
+      <text x="403" y="46" font-size="12" font-weight="500" text-anchor="middle">LongMemEval-S · fixed</text>
+      <rect class="stage" x="286" y="58" width="234" height="34" rx="5"/><text x="298" y="79" font-size="11">1 · sample: 30 q, seed 42</text>
+      <rect class="stage" x="286" y="100" width="234" height="34" rx="5"/><text x="298" y="121" font-size="11">2 · memory: local top-5 search</text>
+      <rect class="stage" x="286" y="142" width="234" height="34" rx="5"/><text x="298" y="163" font-size="11">3 · reader: the harness answers</text>
+      <rect class="stage" x="286" y="184" width="234" height="34" rx="5"/><text x="298" y="205" font-size="11">4 · judge: official prompt</text>
+      <path class="wire" d="M534,129 L566,129" marker-end="url(#arr)"/>
+      <rect class="box" x="570" y="104" width="82" height="50" rx="6"/>
+      <text x="611" y="125" font-size="11" text-anchor="middle">results/</text><text class="muted" x="611" y="141" font-size="11" text-anchor="middle">.jsonl</text>
+    </svg>
+    <div class="legend">
+      <span><i class="sw d"></i>Adapter written but not run here</span>
+      <span><i class="sw o"></i>Same for every harness</span>
+    </div>
+  </div>
+  <p class="prose">This is what "agnostic" means here. Each harness is a small adapter that sends one prompt and returns text. Adapters never import each other, so you can add or drop one without touching the rest. The benchmark goes the other way: it owns its data, sample, memory search, prompts and judge, and keeps them identical for every harness. A second benchmark would live in its own folder and share nothing with this one.</p>
+</section>
+
+<section>
+  <h2>The benchmark to use: LongMemEval-S</h2>
+  <p class="prose">Use LongMemEval-S, the cleaned release. It's the benchmark every vendor on this page quotes, so your numbers line up against theirs. It ships an official judge prompt for each question type, and it tests five abilities: pulling out a fact, combining facts across sessions, noticing a fact that changed, reasoning about dates, and saying "I don't know" when the answer isn't there. Each question hides its evidence among about 50 chat sessions.</p>
+  <ul class="steps">
+    <li><b>Sample:</b> 30 questions, 5 from each of the 6 question types, fixed seed 42. Every harness sees the same 30.</li>
+    <li><b>Memory:</b> each session is split into turns. BM25 or a local embedder scores the turns, and the top 5 sessions go to the reader.</li>
+    <li><b>Reader:</b> the LongMemEval answer prompt, with tools, settings and the harness's own memory turned off.</li>
+    <li><b>Judge:</b> the official LongMemEval judge prompts, copied verbatim, run by one fixed judge (Claude Sonnet through the subscription) for every harness.</li>
+  </ul>
+  <p class="prose">One thing it doesn't measure is a harness's own memory files, such as <code>CLAUDE.md</code>, auto memory or <code>GEMINI.md</code>. Those are loaded whole at session start, with no search step to test. Judging them takes a task-based test that runs across real sessions, like MemoryAgentBench, which is a much bigger project.</p>
+</section>
+
+<section>
+  <h2>What runs without an API key</h2>
+  <div class="scroll">
+    <table class="small">
+      <thead><tr><th>Harness</th><th>Login it can use</th><th>Models tried</th><th>In this pilot</th></tr></thead>
+      <tbody>
+        <tr><td>Claude Code</td><td>Claude Pro / Max subscription</td><td>Haiku, Sonnet</td><td><span class="tag use">Ran</span> 30 questions × 2 conditions each</td></tr>
+        <tr><td>opencode</td><td>Free Zen models with no login, or GitHub Copilot OAuth</td><td>DeepSeek V4.1 Flash, MiMo V2.6 Flash</td><td><span class="tag opt">Partly ran</span> the free tier stopped answering after about 70 calls. GLM 5.3 Flash had already left the free list.</td></tr>
+        <tr><td>Hermes Agent</td><td>ChatGPT / Codex OAuth or Copilot. A Claude subscription is not accepted.</td><td>none</td><td><span class="tag skip">Blocked</span> no provider logged in</td></tr>
+        <tr><td>Gemini CLI</td><td>Google account login</td><td>none</td><td><span class="tag skip">Not installed</span> adapter written, untested</td></tr>
+        <tr><td>Codex CLI</td><td>ChatGPT login</td><td>none</td><td><span class="tag skip">Not installed</span> adapter written, untested</td></tr>
+        <tr><td>Local search</td><td>None needed (CPU only)</td><td>BM25, MiniLM-L6, bge-small</td><td><span class="tag use">Ran</span> about 14 min for all three on a 14 GB laptop</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>Pilot results</h2>
+  <h3>Retrieval: did the evidence make the top 5?</h3>
+  <div class="scroll">
+    <table class="small">
+      <thead><tr><th>Search</th><th>Any evidence in top 5</th><th>All evidence in top 5</th><th>All evidence in top 10</th><th>Time</th></tr></thead>
+      <tbody>
+        <tr><td>BM25 (keywords)</td><td class="num">93.1 %</td><td class="num">82.8 %</td><td class="num">89.7 %</td><td class="num">1 s</td></tr>
+        <tr><td>MiniLM-L6 (embedding)</td><td class="num">100 %</td><td class="num">89.7 %</td><td class="num">100 %</td><td class="num">140 s</td></tr>
+        <tr><td>bge-small (embedding)</td><td class="num">96.6 %</td><td class="num">89.7 %</td><td class="num">93.1 %</td><td class="num">692 s</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="prose">29 questions each. The one question whose correct response is "I don't know" has no evidence to find, so it's left out of recall. With about 50 sessions per question, even plain keyword search finds the evidence most of the time.</p>
+
+  <h3>Judged accuracy</h3>
+  <div class="chart">
+    <svg viewBox="0 0 660 222" role="img" aria-label="Judged accuracy on 30 questions. Claude Haiku: 90 percent with the answer sessions given, 70 percent with retrieved memory. Claude Sonnet: 90 percent given, 86.7 percent retrieved. DeepSeek V4.1 Flash: 86.7 percent given; the retrieved run did not finish because the free tier stopped answering.">
+      <!-- scale: x = 150 + v*4.4 -->
+      <g class="grid">
+        <line x1="150" y1="10" x2="150" y2="196"/><line x1="260" y1="10" x2="260" y2="196"/>
+        <line x1="370" y1="10" x2="370" y2="196"/><line x1="480" y1="10" x2="480" y2="196"/>
+        <line x1="590" y1="10" x2="590" y2="196"/>
+      </g>
+      <g font-size="11" text-anchor="middle">
+        <text class="muted" x="150" y="214">0</text><text class="muted" x="260" y="214">25</text>
+        <text class="muted" x="370" y="214">50</text><text class="muted" x="480" y="214">75</text>
+        <text class="muted" x="590" y="214">100 %</text>
+      </g>
+
+      <text x="0" y="34" font-size="13" font-weight="500">Claude Haiku</text>
+      <rect class="b-oracle" x="150" y="20" width="396" height="18" rx="2"/>
+      <text class="onbar" x="156" y="33">answer sessions given</text><text x="552" y="33" font-size="12">90.0 ±11</text>
+      <rect class="b-ret" x="150" y="44" width="308" height="18" rx="2"/>
+      <text class="onbar" x="156" y="57">retrieved, bge-small top 5</text><text x="464" y="57" font-size="12">70.0 ±16</text>
+
+      <text x="0" y="96" font-size="13" font-weight="500">Claude Sonnet</text>
+      <rect class="b-oracle" x="150" y="82" width="396" height="18" rx="2"/>
+      <text class="onbar" x="156" y="95">answer sessions given</text><text x="552" y="95" font-size="12">90.0 ±11</text>
+      <rect class="b-ret" x="150" y="106" width="381.5" height="18" rx="2"/>
+      <text class="onbar" x="156" y="119">retrieved, bge-small top 5</text><text x="537" y="119" font-size="12">86.7 ±12</text>
+
+      <text x="0" y="158" font-size="13" font-weight="500">DeepSeek V4.1</text>
+      <text class="muted" x="0" y="173" font-size="11">opencode, free</text>
+      <rect class="b-oracle" x="150" y="144" width="381.5" height="18" rx="2"/>
+      <text class="onbar" x="156" y="157">answer sessions given</text><text x="537" y="157" font-size="12">86.7 ±12</text>
+      <text class="muted" x="156" y="181" font-size="11">retrieved: stopped at 2 of 30, free tier quit</text>
+    </svg>
+    <div class="legend">
+      <span><i class="sw o"></i>Answer sessions given (ceiling)</span>
+      <span><i class="sw r"></i>Retrieved memory</span>
+      <span>± is the 95 % interval for n = 30</span>
+    </div>
+  </div>
+
+  <h3>By question type (correct out of asked)</h3>
+  <div class="scroll">
+    <table class="small">
+      <thead><tr><th>Question type</th><th>Haiku · given</th><th>Haiku · retrieved</th><th>Sonnet · given</th><th>Sonnet · retrieved</th><th>DeepSeek · given</th></tr></thead>
+      <tbody>
+        <tr><td>Fact the user said</td><td class="num">4/5</td><td class="num ok">5/5</td><td class="num ok">5/5</td><td class="num ok">5/5</td><td class="num">4/5</td></tr>
+        <tr><td>Fact the assistant said</td><td class="num ok">5/5</td><td class="num ok">5/5</td><td class="num ok">5/5</td><td class="num ok">5/5</td><td class="num ok">5/5</td></tr>
+        <tr><td>User preference</td><td class="num">4/5</td><td class="num low">2/5</td><td class="num">4/5</td><td class="num">4/5</td><td class="num">3/5</td></tr>
+        <tr><td>Across sessions</td><td class="num">4/5</td><td class="num low">1/5</td><td class="num">3/5</td><td class="num">3/5</td><td class="num">4/5</td></tr>
+        <tr><td>Fact that changed</td><td class="num ok">5/5</td><td class="num">3/5</td><td class="num ok">5/5</td><td class="num">4/5</td><td class="num ok">5/5</td></tr>
+        <tr><td>Dates and time</td><td class="num ok">4/4</td><td class="num ok">4/4</td><td class="num ok">4/4</td><td class="num ok">4/4</td><td class="num ok">4/4</td></tr>
+        <tr><td>Should say "I don't know"</td><td class="num ok">1/1</td><td class="num ok">1/1</td><td class="num ok">1/1</td><td class="num ok">1/1</td><td class="num ok">1/1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>What the pilot shows</h3>
+  <ul class="findings">
+    <li><b>Reading is not the bottleneck.</b> Given the right sessions, all three models land between 87 % and 90 %.</li>
+    <li><b>Search is nearly solved at this size.</b> A free CPU embedder put some evidence in the top 5 for 28 or 29 of 29 questions.</li>
+    <li><b>The reader decides what memory is worth.</b> With the same retrieved sessions, Sonnet lost one question and Haiku lost six. Only 3 of Haiku's 9 misses lacked evidence in the top 5. Most of the rest are preference questions where Haiku said "I don't know" even though the relevant sessions were in front of it. The reader prompt tells it to say that when unsure, and Haiku takes the instruction more literally.</li>
+    <li><b>Sonnet's misses are retrieval misses.</b> In 3 of its 4 wrong answers, the top 5 lacked some of the sessions the answer needed. A cross-session question needs every piece, and top 5 sometimes leaves one out.</li>
+    <li><b>Free tiers are not a test bench.</b> opencode's free models answered about 70 calls this morning, then stopped responding. One model had already been removed from the free list.</li>
+  </ul>
+  <p class="note">Small sample. With 30 questions, every accuracy carries roughly ±11 to ±16 points, so only the Haiku drop is clearly real. The judge is Claude Sonnet, the same family as two of the readers, which may favor them. MiniLM edged out bge-small on recall, but the QA runs used bge-small because it was chosen before the run. One seed, one run each.</p>
+</section>
+
+<section>
+  <h2>The code</h2>
+  <p class="prose">Everything is in <code>prueba/memory_bench/</code>, managed with <code>uv</code>. Dependencies are <code>fastembed</code> and <code>rank-bm25</code>, with no torch and no GPU. Each run writes one line per question and resumes where it stopped, so a quota cut-off loses nothing.</p>
+  <div class="codes">
+    <figure>
+      <figcaption>harnesses/base.py · the only contract a benchmark sees</figcaption>
+<pre><code>class Harness(Protocol):
+    name: str
+    model: str
+
+    def ask(self, prompt: str) -&gt; str:
+        """Send one prompt, return the answer."""
+
+def load(spec: str) -&gt; Harness:
+    """'claude_code:haiku' -&gt;
+    harnesses.claude_code.make('haiku')"""
+    module, _, model = spec.partition(":")
+    mod = importlib.import_module(f"harnesses.{module}")
+    return mod.make(model)</code></pre>
+    </figure>
+    <figure>
+      <figcaption>harnesses/claude_code.py · one adapter</figcaption>
+<pre><code>class ClaudeCode(CliHarness):
+    def command(self):
+        return ["claude", "-p", "--model", self.model,
+                "--tools", "", "--setting-sources", "",
+                "--strict-mcp-config",
+                "--no-session-persistence"]
+
+    def env(self):
+        e = super().env()
+        e["CLAUDE_CODE_DISABLE_AUTO_MEMORY"] = "1"
+        e.pop("ANTHROPIC_API_KEY", None)  # subscription
+        return e</code></pre>
+    </figure>
+    <figure>
+      <figcaption>benchmarks/longmemeval/run.py · fixed by the benchmark</figcaption>
+<pre><code>JUDGE = "claude_code:sonnet"  # same for every harness
+K = 5                         # sessions the reader sees
+METHOD = "bge-small"          # memory in 'retrieved'
+N, SEED = 30, 42
+
+hyp = reader.ask(READER.format(history=hist,
+                 date=it["question_date"],
+                 question=it["question"]))
+verdict = judge.ask(prompts.judge(
+    it["question_type"], it["question"],
+    it["answer"], hyp, is_abstention(it)))</code></pre>
+    </figure>
+    <figure>
+      <figcaption>Reproduce the pilot</figcaption>
+<pre><code>cd memory_bench
+uv run python -m benchmarks.longmemeval.run \
+    retrieval --n 30
+uv run python -m benchmarks.longmemeval.run qa \
+    --harness claude_code:haiku --condition oracle
+uv run python -m benchmarks.longmemeval.run qa \
+    --harness claude_code:haiku --condition retrieved
+uv run python report.py   # results/summary.json</code></pre>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <h2>Method and limits</h2>
+  <p class="note">Part one comes from web searches on 2026-11-17. Searches restricted to <code>site:reddit.com</code> returned no threads, so every Reddit opinion above is quoted second-hand from the article that cites it. Most benchmark figures are vendor self-reports. Treat any number without an independent rerun as a claim. Part two is our own pilot from 2026-11-18. Its limits are listed under the pilot results.</p>
+</section>
+
+<section>
+  <h2>Sources</h2>
+  <ul class="sources">
+    <li><a href="https://code.claude.com/docs/en/memory">Claude Code memory docs</a></li>
+    <li><a href="https://geminicli.com/docs/tools/memory">Gemini CLI: save_memory</a></li>
+    <li><a href="https://geminicli.com/docs/cli/auto-memory/">Gemini CLI: Auto Memory</a></li>
+    <li><a href="https://hermes-agent.nousresearch.com/docs/user-guide/features/memory-providers">Hermes memory providers</a></li>
+    <li><a href="https://honcho.dev/docs/v3/guides/integrations/hermes">Honcho + Hermes</a></li>
+    <li><a href="https://docs.mem0.ai/integrations/hermes">Mem0 + Hermes</a></li>
+    <li><a href="https://hindsight.vectorize.io/blog/2026/04/06/hermes-native-memory-provider">Hindsight as a Hermes provider</a></li>
+    <li><a href="https://arxiv.org/html/2512.12818v1">Hindsight paper (arXiv 2512.12818)</a></li>
+    <li><a href="https://vectorize.io/articles/hermes-agent-memory-providers-compared">Hermes providers compared</a></li>
+    <li><a href="https://glukhov.org/ai-systems/memory/agent-memory-providers/">Agent memory providers compared (Glukhov)</a></li>
+    <li><a href="https://raw.githubusercontent.com/VictorTaelin/OptMem/main/README.md">OptMem README</a></li>
+    <li><a href="https://moclaw.ai/blog/what-is-optmem">OptMem explained (MoClaw)</a></li>
+    <li><a href="https://discuss.pytorch.kr/t/optmem-ai/11753">OptMem discussion (PyTorch KR)</a></li>
+    <li><a href="https://alphasignal.ai/news/victor-taelin-s-optmem-gives-ai-agents-permanent-memory-without-a-database">OptMem coverage (AlphaSignal)</a></li>
+    <li><a href="https://github.com/rafmyr/OptMem">rafmyr/OptMem fork</a></li>
+    <li><a href="https://vectorize.io/articles/mempalace-review">MemPalace review (Vectorize)</a></li>
+    <li><a href="https://vectorize.io/articles/mempalace-benchmarks">MemPalace benchmarks debunked</a></li>
+    <li><a href="https://arxiv.org/pdf/2604.21284">MemPalace critique (arXiv 2604.21284)</a></li>
+    <li><a href="https://www.explainx.ai/blog/mempalace-local-ai-memory-github">What Reddit got right about MemPalace</a></li>
+    <li><a href="https://dev.to/syedabdulbasit7/i-tried-mempalace-the-viral-ai-memory-tool-everyones-fighting-about-6a9">I tried MemPalace (DEV)</a></li>
+    <li><a href="https://www.stork.ai/tool/mempalace">MemPalace (Stork AI)</a></li>
+    <li><a href="https://atlan.com/know/mem0-alternatives/">Mem0 alternatives and benchmarks (Atlan)</a></li>
+    <li><a href="https://automem.ai/blog/agent-memory-in-2026-an-honest-comparison-of-mem0-zep-letta-and-the-rest">Agent memory in 2026 (AutoMem)</a></li>
+    <li><a href="https://mem0.ai/library/agent-memory/ai-memory-benchmarks-in-2026">LoCoMo vs LongMemEval vs BEAM</a></li>
+    <li><a href="https://arxiv.org/html/2507.05257v3">MemoryAgentBench (arXiv 2507.05257)</a></li>
+    <li><a href="https://github.com/noesskeetit/second-brain-mcp">second-brain-mcp</a></li>
+    <li><a href="https://www.mindstudio.ai/blog/ai-second-brain-claude-code-obsidian-architecture">Second brain architecture (MindStudio)</a></li>
+    <li><a href="https://limitededitionjonathan.substack.com/p/stop-calling-it-memory-the-problem">Stop Calling It Memory</a></li>
+    <li><a href="https://dev.to/mikeadolan/how-i-built-persistent-memory-for-claude-code-1dn7/comments">Persistent memory for Claude Code (DEV comments)</a></li>
+    <li><a href="https://claudeissues.com/issue/85557-portable-experience-memory-across-claude-sessions-and-agents">Portable memory issue</a></li>
+    <li><a href="https://glama.ai/mcp/servers/elvismdev/mem0-mcp-selfhosted">mem0 MCP self-hosted</a></li>
+    <li><a href="https://alternativeto.net/software/claude-mem/about">claude-mem</a></li>
+    <li><a href="https://github.com/xiaowu0162/LongMemEval">LongMemEval repository and judge prompts</a></li>
+    <li><a href="https://arxiv.org/abs/2410.10813">LongMemEval paper (arXiv 2410.10813)</a></li>
+    <li><a href="https://huggingface.co/datasets/xiaowu0162/longmemeval-cleaned">LongMemEval cleaned dataset</a></li>
+    <li><a href="https://github.com/qdrant/fastembed">fastembed (local CPU embeddings)</a></li>
+  </ul>
+</section>
+
+</div>
